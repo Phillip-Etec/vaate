@@ -94,39 +94,6 @@
     " set default colorscheme
     " colorscheme desert
 
-    " PLUGINS ---------------------------------------------------------------- {{{
-    "
-    " call plug#begin()
-    " The default plugin directory will be as follows:
-    "   - Vim (Linux/macOS): '~/.vim/plugged'
-    "   - Vim (Windows): '~/vimfiles/plugged'
-    "   - Neovim (Linux/macOS/Windows): stdpath('data') . '/plugged'
-    " You can specify a custom plugin directory by passing it as the argument
-    "   - e.g. `call plug#begin('~/.vim/plugged')`
-    "   - Avoid using standard Vim directory names like 'plugin'
-
-    " Make sure you use single quotes
-
-    " Plug 'dracula/vim', { 'as': 'dracula' }
-
-    " Plug 'vim-airline/vim-airline'
-
-    " Plug 'tpope/vim-surround'
-
-    " Plug 'preservim/nerdtree'
-
-    " Plug 'vim-airline/vim-airline-themes'
-
-
-    " Initialize plugin system
-    " - Automatically executes `filetype plugin indent on` and `syntax enable`.
-    " call plug#end()
-    " You can revert the settings after the call like so:
-    "   filetype indent off   " Disable file-type-specific indentation
-    "   syntax off            " Disable syntax highlighting
-    " }}}
-    "
-    
     execute pathogen#infect()
     
     set background=dark
@@ -173,25 +140,25 @@
     " You can split the window in Vim by typing :split or :vsplit.
     " Navigate the split view easier by pressing CTRL+j, CTRL+k, CTRL+h, or CTRL+l.
     nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-h> <c-w>h
-nnoremap <c-l> <c-w>l
+    nnoremap <c-k> <c-w>k
+    nnoremap <c-h> <c-w>h
+    nnoremap <c-l> <c-w>l
 
-" Resize split windows using arrow keys by pressing:
-" CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
-noremap <c-up> <c-w>+
-noremap <c-down> <c-w>-
-noremap <c-left> <c-w>>
-noremap <c-right> <c-w><
+    " Resize split windows using arrow keys by pressing:
+    " CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
+    noremap <c-up> <c-w>+
+    noremap <c-down> <c-w>-
+    noremap <c-left> <c-w>>
+    noremap <c-right> <c-w><
 
-" NERDTree specific mappings.
-" Map the F3 key to toggle NERDTree open and close.
-" nnoremap <F3> :NERDTreeToggle<cr>
+    " NERDTree specific mappings.
+    " Map the F3 key to toggle NERDTree open and close.
+    " nnoremap <F3> :NERDTreeToggle<cr>
 
-" Have nerdtree ignore certain files and directories.
-" let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$']
+    " Have nerdtree ignore certain files and directories.
+    " let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$']
 
-" }}}
+    " }}}
 
 " VIMSCRIPT -------------------------------------------------------------- {{{
 
@@ -230,8 +197,7 @@ if has('gui_running')
 
     " Set the color scheme.
     colorscheme dracula
-
-    " Set a custom font you have installed on your computer.
+" Set a custom font you have installed on your computer.
     " Syntax: <font_name>\ <weight>\ <size>
     set guifont=FiraCode\ Nerd\ Font\ Mono\ weight=450\ 12
 
