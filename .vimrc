@@ -132,9 +132,9 @@
     set background=dark
     nnoremap <leader>\ ``
 
-    nnoremap <leader>nt :NERDTreeToggle<CR>
-    nnoremap <leader>nf :NERDTreeFocus<CR>
-    nnoremap <leader>nc :NERDTreeClose<CR>
+    nnoremap <leader>ntt :NERDTreeToggle<CR>
+    nnoremap <leader>ntf :NERDTreeFocus<CR>
+    nnoremap <leader>ntc :NERDTreeClose<CR>
 
 
 

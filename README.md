@@ -1,2 +1,7 @@
 # vaate
-repository for my vim configuration and pathogen submodules 
+Vim configuration with pathogen runtime management, Vim as a text editor
+
+# Installing submodules:
+```
+git submodule update --init --recursive
+```
