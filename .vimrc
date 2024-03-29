@@ -129,6 +129,7 @@
     
     execute pathogen#infect()
     
+    set background=dark
     nnoremap <leader>\ ``
 
     nnoremap <leader>nt :NERDTreeToggle<CR>
