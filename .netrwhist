@@ -1,0 +1,9 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =7
+let g:netrw_dirhist_7='/home/philldev/.config/mpv'
+let g:netrw_dirhist_6='/home/philldev/.config/gtk-3.0'
+let g:netrw_dirhist_5='/usr/share/qt5ct/colors'
+let g:netrw_dirhist_4='/home/philldev/.cache/temp/manjaro-6.3/shared/manjaro/live-overlay/etc/skel/.config/manjaro'
+let g:netrw_dirhist_3='/home/philldev/.cache/temp/manjaro-6.3/shared/manjaro/live-overlay/etc/skel/.config'
+let g:netrw_dirhist_2='/home/philldev/.cache/temp/manjaro-6.3/community/sway/live-overlay/etc/sway/config.d'
+let g:netrw_dirhist_1='/home/philldev/.cache/temp/iso-profiles/community/sway/desktop-overlay'
