@@ -126,13 +126,9 @@
     "   syntax off            " Disable syntax highlighting
     " }}}
     "
-
-    " MAPPINGS --------------------------------------------------------------- {{{
-
-    " Set the backslash as the leader key.
-    let mapleader = "\\"
-
-    " Press \\ to jump back to the last cursor position.
+    
+    execute pathogen#infect()
+    
     nnoremap <leader>\ ``
 
     nnoremap <leader>nt :NERDTreeToggle<CR>
