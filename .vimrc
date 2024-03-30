@@ -89,12 +89,14 @@
     set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
     " kitty opacity compatibility
-    let &t_ut=""
+    " let &t_ut=""
 
     " set default colorscheme
     " colorscheme desert
 
     execute pathogen#infect()
+
+    colorscheme dracula
     
     set background=dark
     nnoremap <leader>\ ``
