@@ -12,7 +12,8 @@ This is a list of mneumonics of both vim commands that I find kind of hard to me
 - **d**elete **a** **p**aragraph;
 
 ## Surround:
-- **c**hange **s**urrounding **'** **(**;
-  * where: **'** is the character to be changed and **(** is the character to change to
-- **y**ield **s**urrounding **i**nner **w**ord **]**;
-
+- **c**hange **s**urrounding **x** **y**;
+  * where: **x** is the character to be changed and **y** is the character to change to.
+- **d**elete **s**urrounding **x**;
+- **c**hange **s**urrounding **t**rail **x**;
+- **y**ield **s**urrounding **i**nner **w**ord (to) **]**;

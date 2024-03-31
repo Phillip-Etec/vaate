@@ -104,6 +104,7 @@
     nnoremap <leader>` ``
 
     nnoremap <leader>bn :bn<cr> ;buffer next
+    nnoremap <leader>bp :bp<cr> ;buffer previous
     nnoremap <leader>tn gt ;next tab
 
     " NERDTree Mappings
