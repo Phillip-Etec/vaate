@@ -103,15 +103,19 @@
     set background=dark
     nnoremap <leader>` ``
 
+    nnoremap <leader>bn :bn<cr> ;buffer next
+    nnoremap <leader>tn gt ;next tab
+
     " NERDTree Mappings
     nnoremap <leader>ntt :NERDTreeToggle<CR>
     nnoremap <leader>ntf :NERDTreeFocus<CR>
     nnoremap <leader>ntc :NERDTreeClose<CR>
+    nnoremap <leader>nte :NERDTreeExplore<CR>
 
     " Fugitive mappings
     nnoremap <leader>fgp :Git push
-    nnoremap <leader>fgc :Git add %<CR>:Git commit -m
-
+    nnoremap <leader>fgc :Git add %<CR>:Git commit -m "
+   
     " Press \p to print the current file to the default printer from a Linux operating system.
     " View available printers:   lpstat -v
     " Set default printer:       lpoptions -d <printer_name>
