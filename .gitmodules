@@ -31,3 +31,6 @@
 [submodule "bundle/vim-startify"]
 	path = bundle/vim-startify
 	url = https://github.com/mhinz/vim-startify
+[submodule "bundle/indentline"]
+	path = bundle/indentline
+	url = https://github.com/yggdroot/indentline
