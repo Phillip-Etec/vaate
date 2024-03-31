@@ -88,7 +88,7 @@
     " Wildmenu will ignore files with these extensions.
     set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
-
+    " Remap K to Esc because the man page feature is actually pretty annoying
     nnoremap K <ESC>
     " kitty opacity compatibility
     " let &t_ut=""
