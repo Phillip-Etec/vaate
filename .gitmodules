@@ -28,3 +28,6 @@
 [submodule "bundle/vim-visual-multi"]
 	path = bundle/vim-visual-multi
 	url = https://github.com/mg979/vim-visual-multi
+[submodule "bundle/vim-lightline"]
+	path = bundle/vim-lightline
+	url = https://github.com/itchyny/lightline.vim
