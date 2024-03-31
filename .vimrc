@@ -101,13 +101,16 @@
     colorscheme dracula
     
     set background=dark
-    nnoremap <leader>\ ``
+    nnoremap <leader>` ``
 
+    " NERDTree Mappings
     nnoremap <leader>ntt :NERDTreeToggle<CR>
     nnoremap <leader>ntf :NERDTreeFocus<CR>
     nnoremap <leader>ntc :NERDTreeClose<CR>
 
-
+    " Fugitive mappings
+    nnoremap <leader>fgp :Git push
+    nnoremap <leader>fgc :Git add %<CR>:Git commit -m
 
     " Press \p to print the current file to the default printer from a Linux operating system.
     " View available printers:   lpstat -v
