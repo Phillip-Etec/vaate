@@ -103,10 +103,14 @@
     set background=dark
     nnoremap <leader>` ``
 
-    nnoremap <leader>bn :bn<cr> ;buffer next
-    nnoremap <leader>bp :bp<cr> ;buffer previous
+    nnoremap <leader>bn :bn<CR> ;buffer next
+    nnoremap <leader>bn :bn<CR> ;buffer next
+    nnoremap <leader>bp :bp<CR> ;buffer previous
     nnoremap <leader>tn gt ;next tab
 
+    " Embedded terminal
+    nnoremap <leader>et :term<CR>
+    
     " NERDTree Mappings
     nnoremap <leader>ntt :NERDTreeToggle<CR>
     nnoremap <leader>ntf :NERDTreeFocus<CR>
