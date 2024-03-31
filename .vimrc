@@ -150,10 +150,10 @@
 
     " Resize split windows using arrow keys by pressing:
     " CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
-    noremap <c-up> <c-w>+
-    noremap <c-down> <c-w>-
-    noremap <c-left> <c-w>>
-    noremap <c-right> <c-w><
+    nnoremap <c-,> <c-w>+
+    nnoremap <c-.> <c-w>-
+    nnoremap <c-left> <c-w>>
+    nnoremap <c-right> <c-w><
 
     " NERDTree specific mappings.
     " Map the F3 key to toggle NERDTree open and close.
