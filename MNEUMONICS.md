@@ -17,3 +17,11 @@ This is a list of mneumonics of both vim commands that I find kind of hard to me
 - **d**elete **s**urrounding **x**;
 - **c**hange **s**urrounding **t**rail **x**;
 - **y**ield **s**urrounding **i**nner **w**ord (to) **]**;
+
+## NerdCommenter
+- <**leader**> **c**ommenter **c**omment;
+- <**leader**> **c**ommenter **u**ncomment;
+- <**leader**> **c**ommenter **n**est;
+- <**leader**> **c**ommenter **i**nvert;
+- <**leader**> **c**ommenter **y**ank;
+- <**leader**> **c**ommenter **A**ppend; <!--like this-->
