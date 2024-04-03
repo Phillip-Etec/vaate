@@ -9,7 +9,9 @@
     "                 ╚═══╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝
     "               
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""               
-
+    
+    " MISCELLANEOUS """"""""""""""""""""""""""""""""""""""""""""""""""""""""""" {{{
+    "
     " Disable compatibility with vi which can cause unexpected issues.
     set nocompatible
 
@@ -88,6 +90,9 @@
     " Wildmenu will ignore files with these extensions.
     set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
 
+    " }}}
+    
+    " KEYBINDINGS """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""" {{{
     " Remap K to Esc because the man page feature is actually pretty annoying
     nnoremap K <ESC>
     " kitty opacity compatibility
@@ -205,6 +210,10 @@ augroup END
 
 " let g:airline_theme='base16_dracula'
 
+if $TERM == 'alacritty'
+    "echo 'Eureca'
+    set termguicolors    
+endif
 " If GUI version of Vim is running set these options.
 if has('gui_running')
 
