@@ -34,3 +34,6 @@
 [submodule "bundle/indentline"]
 	path = bundle/indentline
 	url = https://github.com/yggdroot/indentline
+[submodule "bundle/tabular"]
+	path = bundle/tabular
+	url = https://github.com/godlygeek/tabular
