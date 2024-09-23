@@ -128,13 +128,8 @@
     colorscheme dracula
     
     set background=dark
-    nnoremap <leader>` ``
     nnoremap <leader>´ ``
 
-    nnoremap <leader>bn :bn<CR> ;buffer next
-    nnoremap <leader>bn :bn<CR> ;buffer next
-    nnoremap <leader>bp :bp<CR> ;buffer previous
-    nnoremap <leader>tn gt ;next tab
     nnoremap <leader>bn :bn<CR> 
     nnoremap <leader>bp :bp<CR> 
     nnoremap <leader>bN :bp<CR> 
@@ -205,7 +200,6 @@
     " nnoremap <F3> :NERDTreeToggle<cr>
 
     " Have nerdtree ignore certain files and directories.
-    " let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$']
     let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$']
 
     " }}}
@@ -218,7 +212,6 @@ augroup filetype_vim
     autocmd FileType vim setlocal foldmethod=marker
 augroup END
 
-" If the current file type is HTML, set indentation to 2 spaces.
 " If the current file type is HTML,pug,handlebars, set indentation to 2 spaces.
 autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
 autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
@@ -255,7 +248,6 @@ if has('gui_running')
 
     " Set the color scheme.
     colorscheme dracula
-" Set a custom font you have installed on your computer.
     " Set a custom font you have installed on your computer.
     " Syntax: <font_name>\ <weight>\ <size>
     set guifont=FiraCode\ Nerd\ Font\ Mono\ weight=450\ 12
