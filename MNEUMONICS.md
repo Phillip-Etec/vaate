@@ -23,6 +23,7 @@ This is a list of mneumonics of both vim commands that I find kind of hard to me
 - <**leader**> **c**ommenter **u**ncomment;
 - <**leader**> **c**ommenter **n**est;
 - <**leader**> **c**ommenter **i**nvert;
+<!--invert this if you want to try it out-->
 - <**leader**> **c**ommenter **y**ank;
 - <**leader**> **c**ommenter **A**ppend; <!--like this-->
 
