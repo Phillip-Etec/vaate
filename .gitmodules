@@ -4,9 +4,6 @@
 [submodule "bundle/vim-sensible"]
 	path = bundle/vim-sensible
 	url = https://github.com/tpope/vim-sensible.git
-[submodule "bundle/vim-airline"]
-	path = bundle/vim-airline
-	url = https://github.com/vim-airline/vim-airline
 [submodule "bundle/vim-unimpaired"]
 	path = bundle/vim-unimpaired
 	url = https://github.com/tpope/vim-unimpaired
@@ -23,7 +20,7 @@
 	path = bundle/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive
 [submodule "bundle/vim-visual-multi"]
-	path = bundle/vim-visual-multi
+	path = extra/vim-visual-multi
 	url = https://github.com/mg979/vim-visual-multi
 [submodule "bundle/nerdcommenter"]
 	path = bundle/nerdcommenter
@@ -37,3 +34,9 @@
 [submodule "bundle/tabular"]
 	path = bundle/tabular
 	url = https://github.com/godlygeek/tabular
+[submodule "extra/vim-polyglot"]
+	path = extra/vim-polyglot
+	url = https://github.com/sheerun/vim-polyglot
+[submodule "bundle/lightline.vim"]
+	path = bundle/lightline.vim
+	url = https://github.com/itchyny/lightline.vim

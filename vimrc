@@ -1,5 +1,5 @@
 "
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+  """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "
 "               ██╗   ██╗██╗███╗   ███╗██████╗  ██████╗
 "               ██║   ██║██║████╗ ████║██╔══██╗██╔════╝
@@ -10,7 +10,7 @@
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" MISCELLANEOUS """"""""""""""""""""""""""""""""""""""""""""""""""""""""""" {{{
+" MISCELLANEOUS {{{
 "
 " Disable compatibility with vi which can cause unexpected issues.
 set nocompatible
@@ -32,8 +32,8 @@ set relativenumber
 set number
 
 " Highlight cursor line and column underneath the cursor
-set nocursorline " faster to not render
-set cursorcolumn
+set cursorline " faster to not render
+set nocursorcolumn " slower than line but doesn't break ligatures
 
 " Set an 80 column border for good coding style
 set cc=80
@@ -93,7 +93,7 @@ set mouse=a
 set mouse+=v
 
 " Set the commands to save in history default number is 20.
-set history=128
+set history=1000
 
 " Enable auto completion menu after pressing TAB.
 set wildmenu
@@ -108,7 +108,10 @@ set wildmode=longest,full
 " Speed up scrolling in Vim
 set nottyfast
 
-set tags=./tags,tags
+" Search upwards for tags file instead only locally
+if has('path_extra')
+  setglobal tags-=./tags tags-=./tags; tags^=./tags;
+endif
 
 let mapleader=" "
 let maplocalleader=" "
@@ -132,13 +135,15 @@ endif
 
 " }}}
 
-" PLUGINS """""""""""""""""""""""""""""""""""""""""""""""""""""""""""" {{{
+" PLUGINS {{{
 
 set background=dark
 colorscheme slate
 
-if empty($INFECT) 
+if empty($INFECT) || $INFECT == '0'
     execute pathogen#infect()
+elseif $INFECT == '1'
+    execute pathogen#infect('bundle/{}', 'extra/{}')
 else
     execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
 endif
@@ -146,17 +151,18 @@ endif
 if $UID != "0"
     colorscheme dracula
 
-    let g:airline_left_sep  = ''
-    let g:airline_right_sep = ''
-    let g:airline_section_y=''
-    let g:airline_section_error=''
+    let g:lightline = {
+          \ 'colorscheme': 'dracula',
+          \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
+          \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" }
+          \ }
 
     let g:indentLine_char = '│'
 endif
 
 " }}}
 
-" KEYBINDINGS --------------------------------------------------------- {{{
+" KEYBINDINGS {{{
 " Remap K to Esc because the man page feature is actually pretty annoying
 nnoremap K <ESC>
 
@@ -191,8 +197,8 @@ nnoremap <leader><space> :
 
 " Pressing the letter o will open a new line below the current one.
 " Exit insert mode after creating a new line above or below the current line.
-nnoremap o o<esc>
-nnoremap O O<esc>
+" nnoremap o o<esc>
+" nnoremap O O<esc>
 
 " Center the cursor vertically when moving to the next word during a search.
 nnoremap n nzz
@@ -224,12 +230,12 @@ vnoremap <s-k> :<C-u>execute "'<,'>move '<-" . (v:count1 + 1)<cr>gv=gv
 
 " from: https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
 " If you want n to always search forward and N backward, use this:
-nnoremap <expr> n  'Nn'[v:searchforward]
-xnoremap <expr> n  'Nn'[v:searchforward]
-onoremap <expr> n  'Nn'[v:searchforward]
-nnoremap <expr> N  'nN'[v:searchforward]
-xnoremap <expr> N  'nN'[v:searchforward]
-onoremap <expr> N  'nN'[v:searchforward]
+nnoremap <expr> n  'Nn'[v:searchforward].'zz'
+xnoremap <expr> n  'Nn'[v:searchforward].'zz'
+onoremap <expr> n  'Nn'[v:searchforward].'zz'
+nnoremap <expr> N  'nN'[v:searchforward].'zz'
+xnoremap <expr> N  'nN'[v:searchforward].'zz'
+onoremap <expr> N  'nN'[v:searchforward].'zz'
 
 " going to next and previous items via <c-n> and <c-p> respectively
 cnoremap <expr> <c-n> wildmenumode() ? "\<c-n>" : "\<down>"
@@ -250,8 +256,8 @@ nnoremap <c-left> <c-w>>
 nnoremap <c-right> <c-w><
 
 " replace the word under the cursor with whatever you want
-nnoremap <Leader>x *``cgn
-nnoremap <Leader>X #``cgN
+nnoremap <Leader>cw *``cgn
+nnoremap <Leader>cW #``cgN
 
 " copy/paste the right way
 nnoremap <leader>p "+p
@@ -273,7 +279,7 @@ let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', 
 
 " }}}
 
-" VIMSCRIPT -------------------------------------------------------------- {{{
+" VIMSCRIPT {{{
 
 " auto reload file on saving
 autocmd BufWritePost $MYVIMRC source $MYVIMRC
@@ -296,31 +302,41 @@ augroup filetype_vim
 augroup END
 
 " If the current file type is HTML,pug,handlebars, set indentation to 2 spaces.
-autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
-autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
-autocmd Filetype hbs setlocal tabstop=2 shiftwidth=2 expandtab
+augroup filetype_htm
+    autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
+    autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
+    autocmd Filetype hbs setlocal tabstop=2 shiftwidth=2 expandtab
+augroup END
 
 " If Vim version is equal to or greater than 7.3 enable undofile.
 " This allows you to undo changes to a file even after saving it.
 if version >= 703
-    set undodir=~/.vim/backup//
-    set directory=~/.vim/swp//
+    " Enable undofile and set undodir and backupdir
+    let s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
+    let &backupdir = expand(s:dir) . '/backup//'
+    let &undodir   = expand(s:dir) . '/undo//'
+    let &directory = expand(s:dir) . '/swp//'
     set undofile
     set undoreload=512
 endif
+
+" Automatically create directories for backup and undo files.
+if !isdirectory(expand(s:dir))
+    call system("mkdir -p " . expand(s:dir) . "/{backup,undo,swp}")
+end
 
 " You can split a window into sections by typing `:split` or `:vsplit`.
 " Display cursorline and cursorcolumn ONLY in active window.
 augroup cursor_off
     autocmd!
     autocmd WinLeave * set nocursorline nocursorcolumn
-    autocmd WinEnter * set nocursorline cursorcolumn
+    autocmd WinEnter * set cursorline nocursorcolumn
 augroup END
 
 " let g:airline_theme='base16_dracula'
 " let g:indentLine_setColors = 0
 
-if $TERM != 'linux'
+if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
     set termguicolors
 endif
 " If GUI version of Vim is running set these options.
@@ -351,7 +367,7 @@ if has('gui_running')
     " Map the F4 key to toggle the menu, toolbar, and scroll bar.
     " <Bar> is the pipe character.
     " <CR> is the enter key.
-    nnoremap <F11> :if &guioptions=~#'mTr'<Bar>
+    nnoremap <F9> :if &guioptions=~#'mTr'<Bar>
                 \set guioptions-=mTr<Bar>
                 \else<Bar>
                 \set guioptions+=mTr<Bar>
@@ -367,10 +383,11 @@ endif
 
 " }}}
 
-" STATUS LINE & UI ------------------------------------------------------------ {{{
+" STATUS LINE & UI {{{
 
 set fillchars+=vert:\\u2502
 highlight CursorColumn guibg=#21222c
+highlight CursorLine guibg=#21222c
 
 " Clear status line when vimrc is reloaded.
 set statusline=
