@@ -142,6 +142,7 @@ if empty($INFECT) || $INFECT == '0'
 elseif $INFECT == '1'
     execute pathogen#infect('bundle/{}', 'extra/{}')
 else
+    execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
@@ -150,9 +151,6 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let s:separators = { 'left': "", 'right': "" }
   let s:subseparators = { 'left': "|", 'right': "|" }
   let s:clock_glyph = ''
-  let g:lightline#gitdiff#indicator_added = 'A: '
-  let g:lightline#gitdiff#indicator_deleted = 'D: '
-  let g:lightline#gitdiff#separator = ' '
 else
   colorscheme dracula
   let s:colors = 'dracula'
@@ -171,7 +169,7 @@ let g:lightline = {
       \ 'subseparator': s:subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'percent', 'lineinfo' ], [ 'filetype', 'diff' ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'lineinfo', 'percent' ], [ 'filetype' ], [ 'diff' ]  ]
       \ },
       \ 'component_function': {
       \   'fugitive': 'LightlineFugitive',
@@ -181,7 +179,7 @@ let g:lightline = {
       \   'diff': 'lightline#gitdiff#get',
       \ },
       \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" },
-      \ 'component_visible_condition': { 'percent': 0 }
+      \ 'component_visible_condition': { 'percent': 0, 'lineinfo': 0 }
       \ }
 source ./autoload/searchcount.vim
 function! LightlineModified()
@@ -431,12 +429,6 @@ if has('gui_running')
                 \set guioptions+=mTr<Bar>
                 \endif<CR><Esc>
 
-    " Change airline trail
-    let g:airline_left_sep = ''
-    let g:airline_right_sep = ''
-
-    let g:airline_theme='dracula'
-
 endif
 
 " }}}
@@ -444,8 +436,8 @@ endif
 " STATUS LINE & UI {{{
 
 set fillchars+=vert:\\u2502
-highlight CursorColumn guibg=#21222c
-highlight CursorLine guibg=#21222c
+highlight CursorColumn ctermbg=1 guibg=#21222c
+highlight CursorLine ctermbg=1 guibg=#21222c
 
 " Clear status line when vimrc is reloaded.
 set statusline=
