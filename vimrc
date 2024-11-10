@@ -181,7 +181,7 @@ let g:lightline = {
       \   'diff': 'lightline#gitdiff#get',
       \ },
       \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" },
-      \ 'component_visible_condition': { 'percent': 1 }
+      \ 'component_visible_condition': { 'percent': 0 }
       \ }
 source ./autoload/searchcount.vim
 function! LightlineModified()
