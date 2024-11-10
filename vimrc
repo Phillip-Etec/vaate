@@ -137,9 +137,6 @@ endif
 
 " PLUGINS {{{
 
-set background=dark
-colorscheme slate
-
 if empty($INFECT) || $INFECT == '0'
     execute pathogen#infect()
 elseif $INFECT == '1'
@@ -148,17 +145,70 @@ else
     execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
 endif
 
-if $UID != "0"
-    colorscheme dracula
-
-    let g:lightline = {
-          \ 'colorscheme': 'dracula',
-          \ 'separator': { 'left': "\ue0b0", 'right': "\ue0b2" },
-          \ 'subseparator': { 'left': "\ue0b1", 'right': "\ue0b3" }
-          \ }
-
-    let g:indentLine_char = '│'
+if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
+  colorscheme habamax
+  let s:colors = '16color'
+  let s:separators = { 'left': "", 'right': "" }
+  let s:subseparators = { 'left': "|", 'right': "|" }
+  let s:clock_glyph = ''
+else
+  colorscheme dracula
+  let s:colors = 'dracula'
+  let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
+  let s:subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
+  let s:clock_glyph = ' '
 endif
+let g:indentLine_char = '│'
+let g:lightline = {
+      \ 'colorscheme': s:colors,
+      \ 'separator': s:separators,
+      \ 'subseparator': s:subseparators,
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'lineinfo', 'percent' ], [ 'filetype' ], [ 'filetype' ]  ]
+      \ },
+      \ 'component_function': {
+      \   'fugitive': 'LightlineFugitive',
+      \   'filename': 'LightlineFilename',
+      \   'filemodified': 'FileTime',
+      \   'searchindex': 'searchcount#status',
+      \ },
+      \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" }
+      \ }
+source ./autoload/searchcount.vim
+function! LightlineModified()
+  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+endfunction
+function! LightlineReadonly()
+  return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
+endfunction
+function! LightlineFilename()
+  return (LightlineReadonly() !=# '' ? LightlineReadonly() . ' ' : '') .
+        \ (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
+        \  &ft ==# 'unite' ? unite#get_status_string() :
+        \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
+        \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
+endfunction
+function! LightlineFugitive()
+  if exists('*FugitiveHead') && !empty(FugitiveHead())
+    return ' ' .. FugitiveHead()
+  endif
+  return ''
+endfunction
+
+function! FileTime()
+    let filename=expand("%")
+    let msg=s:clock_glyph
+    let year=strftime("%Y",getftime(filename))
+    let mandd=strftime("%m %d",getftime(filename))
+    if year !=# strftime("%Y")
+        return strftime("%b %d,%Y@%H:%M:%S",getftime(filename))
+    elseif mandd !=# strftime("%m %d")
+        return strftime("%b %d %H:%M:%S",getftime(filename))
+    endif
+    let msg=msg..strftime("%H:%M:%S",getftime(filename))
+    return msg
+endfunction
 
 " }}}
 
@@ -282,7 +332,7 @@ let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', 
 " VIMSCRIPT {{{
 
 " auto reload file on saving
-autocmd BufWritePost $MYVIMRC source $MYVIMRC
+" autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
 " change cursor style depending on mode
 if empty($TMUX)
