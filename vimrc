@@ -142,7 +142,6 @@ if empty($INFECT) || $INFECT == '0'
 elseif $INFECT == '1'
     execute pathogen#infect('bundle/{}', 'extra/{}')
 else
-    execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
@@ -151,12 +150,19 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let s:separators = { 'left': "", 'right': "" }
   let s:subseparators = { 'left': "|", 'right': "|" }
   let s:clock_glyph = ''
+  let g:lightline#gitdiff#indicator_added = 'A: '
+  let g:lightline#gitdiff#indicator_deleted = 'D: '
+  let g:lightline#gitdiff#separator = ' '
 else
   colorscheme dracula
   let s:colors = 'dracula'
   let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
   let s:subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
   let s:clock_glyph = ' '
+  let g:lightline#gitdiff#indicator_added = ' '
+  let g:lightline#gitdiff#indicator_deleted = ' '
+  let g:lightline#gitdiff#indicator_modified = ' '
+  let g:lightline#gitdiff#separator = ' '
 endif
 let g:indentLine_char = '│'
 let g:lightline = {
@@ -165,15 +171,17 @@ let g:lightline = {
       \ 'subseparator': s:subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'lineinfo', 'percent' ], [ 'filetype' ], [ 'filetype' ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'percent', 'lineinfo' ], [ 'filetype', 'diff' ]  ]
       \ },
       \ 'component_function': {
       \   'fugitive': 'LightlineFugitive',
       \   'filename': 'LightlineFilename',
       \   'filemodified': 'FileTime',
       \   'searchindex': 'searchcount#status',
+      \   'diff': 'lightline#gitdiff#get',
       \ },
-      \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" }
+      \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" },
+      \ 'component_visible_condition': { 'percent': 1 }
       \ }
 source ./autoload/searchcount.vim
 function! LightlineModified()
