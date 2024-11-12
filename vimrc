@@ -146,12 +146,13 @@ else
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
-  colorscheme habamax
+  colorscheme slate
   let s:colors = '16color'
   let s:separators = { 'left': "", 'right': "" }
   let s:subseparators = { 'left': "|", 'right': "|" }
   let s:clock_glyph = ''
 else
+  set noshowmode
   colorscheme dracula
   let s:colors = 'dracula'
   let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
@@ -169,7 +170,7 @@ let g:lightline = {
       \ 'subseparator': s:subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'lineinfo', 'percent' ], [ 'filetype' ], [ 'diff' ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'fileinfo' ], [ 'diff', 'filetype' ]  ]
       \ },
       \ 'component_function': {
       \   'fugitive': 'LightlineFugitive',
@@ -178,10 +179,17 @@ let g:lightline = {
       \   'searchindex': 'searchcount#status',
       \   'diff': 'lightline#gitdiff#get',
       \ },
-      \ 'component': { 'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}" },
+      \ 'component': { 
+      \   'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}",
+      \   'fileinfo': '%2p%% %3l:%-2c'
+      \ },
       \ 'component_visible_condition': { 'percent': 0, 'lineinfo': 0 }
       \ }
-source ./autoload/searchcount.vim
+hi User1 ctermfg=2 ctermbg=0 guifg='#50FA7B' guibg='#44475A'
+hi User2 ctermfg=1 ctermbg=0 guifg='#BD93F9' guibg='#44475A'
+hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
+
+" source autoload/searchcount.vim
 function! LightlineModified()
   return &ft =~# 'help\|vimfiler' ? '' : &modified ? '+' : &modifiable ? '' : '-'
 endfunction
@@ -231,7 +239,7 @@ nnoremap <leader>bn :bn<CR>
 nnoremap <leader>nb :bp<CR>
 nnoremap <leader>bN :bp<CR>
 
-nnoremap <leader>et :term<CR>
+nnoremap <leader>et :tabnew<CR>:term<CR>
 
 " NERDTree Mappings
 nnoremap <leader>ntt :NERDTreeToggle<CR>
@@ -268,7 +276,9 @@ nnoremap g# g#zz
 nnoremap Y y$
 
 " Render the ctags inside Vim.
-nnoremap <F5> :w <CR>:!ctags -R .<CR>
+if executable('ctags')
+  nnoremap <F5> :w <CR>:!ctags -R .<CR><ESC>
+endif
 
 " You can split the window in Vim by typing :split or :vsplit.
 nnoremap <c-j> <c-w>j
@@ -436,8 +446,8 @@ endif
 " STATUS LINE & UI {{{
 
 set fillchars+=vert:\\u2502
-highlight CursorColumn ctermbg=1 guibg=#21222c
-highlight CursorLine ctermbg=1 guibg=#21222c
+highlight CursorColumn ctermfg=0 ctermbg=8 guibg='#21222c'
+highlight CursorLine ctermfg=0 ctermbg=8 guibg='#21222c'
 
 " Clear status line when vimrc is reloaded.
 set statusline=

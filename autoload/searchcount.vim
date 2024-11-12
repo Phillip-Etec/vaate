@@ -43,6 +43,9 @@ function! s:search_term()
 endfunction
 
 function! searchcount#status() abort
+  if ! &hlsearch
+    return ''
+  endif
   try
     let result = searchcount(#{recompute: 1, maxcount: -1})
     if empty(result) || result.total ==# 0
