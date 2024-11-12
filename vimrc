@@ -139,10 +139,14 @@ endif
 
 if empty($INFECT) || $INFECT == '0'
     execute pathogen#infect()
+    let s:difffn = 'diff'
 elseif $INFECT == '1'
     execute pathogen#infect('bundle/{}', 'extra/{}')
+    let s:difffn = 'diffcolor'
+    set updatetime=230
 else
     execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
+    let s:difffn = 'diff'
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
@@ -151,6 +155,10 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let s:separators = { 'left': "", 'right': "" }
   let s:subseparators = { 'left': "|", 'right': "|" }
   let s:clock_glyph = ''
+  let g:lightline#gitdiff#indicator_added = '+'
+  let g:lightline#gitdiff#indicator_deleted = '-'
+  let g:lightline#gitdiff#indicator_modified = '~'
+  let g:lightline#gitdiff#separator = ' '
 else
   set noshowmode
   colorscheme dracula
@@ -162,7 +170,14 @@ else
   let g:lightline#gitdiff#indicator_deleted = ' '
   let g:lightline#gitdiff#indicator_modified = ' '
   let g:lightline#gitdiff#separator = ' '
+  let g:gitgutter_sign_added = '▎'
+  let g:gitgutter_sign_modified = '▎'
+  let g:gitgutter_sign_removed = '  '
+  let g:gitgutter_sign_removed_first_line = '‾'
+  let g:gitgutter_sign_removed_above_and_below = '{'
+  let g:gitgutter_sign_modified_removed = '•'
 endif
+
 let g:indentLine_char = '│'
 let g:lightline = {
       \ 'colorscheme': s:colors,
@@ -170,7 +185,10 @@ let g:lightline = {
       \ 'subseparator': s:subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'fileinfo' ], [ 'diff', 'filetype' ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ 'filetype', s:difffn ]  ]
+      \ },
+      \ 'inactive': {
+      \   'left': [[ 'filename' ]], 'right': [ [ 'lineinfo' ] ]
       \ },
       \ 'component_function': {
       \   'fugitive': 'LightlineFugitive',
@@ -178,20 +196,26 @@ let g:lightline = {
       \   'filemodified': 'FileTime',
       \   'searchindex': 'searchcount#status',
       \   'diff': 'lightline#gitdiff#get',
+      \   'ft': 'MyFiletype',
       \ },
-      \ 'component': { 
+      \ 'component': {
       \   'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}",
-      \   'fileinfo': '%2p%% %3l:%-2c'
+      \   'cursorinfo': '%2p%% %3l:%-2c',
+      \   'diffcolor': "%#User1#%{GitAdded()}%#User3#%{GitModified()}%#User2#%{GitRemoved()}%9*",
       \ },
-      \ 'component_visible_condition': { 'percent': 0, 'lineinfo': 0 }
+      \ 'component_visible_condition': {
+      \   'diffcolor': "exists('*FugitiveHead') && !empty(FugitiveHead())",
+      \   'diff': "exists('*FugitiveHead') && !empty(FugitiveHead())"
+      \ }
       \ }
 hi User1 ctermfg=2 ctermbg=0 guifg='#50FA7B' guibg='#44475A'
-hi User2 ctermfg=1 ctermbg=0 guifg='#BD93F9' guibg='#44475A'
+hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
 hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
+highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
 
 " source autoload/searchcount.vim
 function! LightlineModified()
-  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '+' : &modifiable ? '' : '-'
+  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
 endfunction
 function! LightlineReadonly()
   return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
@@ -223,6 +247,48 @@ function! FileTime()
     let msg=msg..strftime("%H:%M:%S",getftime(filename))
     return msg
 endfunction
+
+function! GitStatus()
+  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return printf("%s%d %s%d %s%d",g:lightline#gitdiff#indicator_added, a,
+                                    \g:lightline#gitdiff#indicator_modified, m,
+                                    \g:lightline#gitdiff#indicator_deleted, r)
+  else
+    return ''
+  endif
+endfunction
+
+function! GitAdded()
+  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (a > 0)? printf("%s%d",g:lightline#gitdiff#indicator_added, a,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! GitModified()
+  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (m > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_modified, m,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! GitRemoved()
+  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (r > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_deleted, r,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! MyFiletype()
+    return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
+  endfunction
 
 " }}}
 
@@ -446,6 +512,7 @@ endif
 " STATUS LINE & UI {{{
 
 set fillchars+=vert:\\u2502
+highlight VertSplit guibg='#21222C' guifg='#282A36'
 highlight CursorColumn ctermfg=0 ctermbg=8 guibg='#21222c'
 highlight CursorLine ctermfg=0 ctermbg=8 guibg='#21222c'
 

@@ -43,3 +43,8 @@
 [submodule "bundle/lightline-gitdiff"]
 	path = bundle/lightline-gitdiff
 	url = https://github.com/niklaas/lightline-gitdiff
+[submodule "extra/vim-gitgutter"]
+	path = extra/vim-gitgutter
+	url = https://github.com/airblade/vim-gitgutter
+	branch = main
+	update = rebase
