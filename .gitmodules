@@ -48,3 +48,8 @@
 	url = https://github.com/airblade/vim-gitgutter
 	branch = main
 	update = rebase
+[submodule "bundle/vim-devicons"]
+	path = bundle/vim-devicons
+	url = https://github.com/ryanoasis/vim-devicons
+	branch = master
+	update = rebase

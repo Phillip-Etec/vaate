@@ -159,6 +159,8 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
   let g:lightline#gitdiff#separator = ' '
+  highlight GitGutterChange ctermbg=NONE ctermfg=6
+  let g:webdevicons_enable_nerdtree = 0
 else
   set noshowmode
   colorscheme dracula
@@ -172,10 +174,11 @@ else
   let g:lightline#gitdiff#separator = ' '
   let g:gitgutter_sign_added = '▎'
   let g:gitgutter_sign_modified = '▎'
-  let g:gitgutter_sign_removed = '  '
-  let g:gitgutter_sign_removed_first_line = '‾'
+  let g:gitgutter_sign_removed = '▾'
+  let g:gitgutter_sign_removed_first_line = '▲'
   let g:gitgutter_sign_removed_above_and_below = '{'
-  let g:gitgutter_sign_modified_removed = '•'
+  let g:gitgutter_sign_modified_removed = ''
+  "highlight GitGutterChange guifg=#8be9fd
 endif
 
 let g:indentLine_char = '│'
@@ -185,7 +188,7 @@ let g:lightline = {
       \ 'subseparator': s:subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ 'filetype', s:difffn ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn, 'filetype' ]  ]
       \ },
       \ 'inactive': {
       \   'left': [[ 'filename' ]], 'right': [ [ 'lineinfo' ] ]
@@ -196,7 +199,7 @@ let g:lightline = {
       \   'filemodified': 'FileTime',
       \   'searchindex': 'searchcount#status',
       \   'diff': 'lightline#gitdiff#get',
-      \   'ft': 'MyFiletype',
+      \   'icon_filename': 'Icon_Filename',
       \ },
       \ 'component': {
       \   'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}",
@@ -208,10 +211,16 @@ let g:lightline = {
       \   'diff': "exists('*FugitiveHead') && !empty(FugitiveHead())"
       \ }
       \ }
+
 hi User1 ctermfg=2 ctermbg=0 guifg='#50FA7B' guibg='#44475A'
 hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
 hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
 highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
+
+if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
+    let g:lightline.active.left = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ]  ]
+    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn ]  ]
+endif
 
 " source autoload/searchcount.vim
 function! LightlineModified()
@@ -227,6 +236,7 @@ function! LightlineFilename()
         \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
         \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
 endfunction
+
 function! LightlineFugitive()
   if exists('*FugitiveHead') && !empty(FugitiveHead())
     return ' ' .. FugitiveHead()
@@ -236,15 +246,19 @@ endfunction
 
 function! FileTime()
     let filename=expand("%")
-    let msg=s:clock_glyph
-    let year=strftime("%Y",getftime(filename))
-    let mandd=strftime("%m %d",getftime(filename))
-    if year !=# strftime("%Y")
-        return strftime("%b %d,%Y@%H:%M:%S",getftime(filename))
-    elseif mandd !=# strftime("%m %d")
-        return strftime("%b %d %H:%M:%S",getftime(filename))
+    let cached_ftime  = getftime(filename)
+    if cached_ftime==# -1 
+      return strftime("%H:%M:%S")
     endif
-    let msg=msg..strftime("%H:%M:%S",getftime(filename))
+    let msg=s:clock_glyph
+    let year=strftime("%Y",cached_ftime)
+    let mandd=strftime("%m %d",cached_ftime)
+    if year !=# strftime("%Y")
+        return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
+    elseif mandd !=# strftime("%m %d")
+        return strftime("%b %d %H:%M:%S",cached_ftime)
+    endif
+    let msg=msg..strftime("%H:%M:%S",cached_ftime)
     return msg
 endfunction
 
@@ -286,9 +300,9 @@ function! GitRemoved()
   endif
 endfunction
 
-function! MyFiletype()
-    return winwidth(0) > 70 ? (strlen(&filetype) ? &filetype . ' ' . WebDevIconsGetFileTypeSymbol() : 'no ft') : ''
-  endfunction
+function! Icon_Filename()
+  return winwidth(0) > 70 ? (strlen(&filetype) ?  WebDevIconsGetFileTypeSymbol() .. ' ' .. LightlineFilename()  : '') : LightlineFilename()
+endfunction
 
 " }}}
 
@@ -305,7 +319,7 @@ nnoremap <leader>bn :bn<CR>
 nnoremap <leader>nb :bp<CR>
 nnoremap <leader>bN :bp<CR>
 
-nnoremap <leader>et :tabnew<CR>:term<CR>
+nnoremap <leader>et :tab ter++kill=hup<CR>
 
 " NERDTree Mappings
 nnoremap <leader>ntt :NERDTreeToggle<CR>
@@ -471,6 +485,7 @@ augroup END
 if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
     set termguicolors
 endif
+
 " If GUI version of Vim is running set these options.
 if has('gui_running')
     set background=dark
