@@ -50,8 +50,8 @@ set expandtab
 " indent a new line the same amount as the line just typed
 set autoindent
 
-" Do not save backup files.
-" set nobackup
+" Do save backup files.
+set backup
 
 " set tab to visible character
 " set listchars=tab:▷▷⋮
@@ -93,20 +93,20 @@ set mouse=a
 set mouse+=v
 
 " Set the commands to save in history default number is 20.
-set history=1000
+set history=10000
 
 " Enable auto completion menu after pressing TAB.
 set wildmenu
 
 " There are certain files that we would never want to edit with Vim.
 " Wildmenu will ignore files with these extensions.
-set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
+set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx,*.webm,*.webp
 
 " get zsh-like tab completions
-set wildmode=longest,full
+set wildmode=longest:full,full
 
 " Speed up scrolling in Vim
-set nottyfast
+set ttyfast
 
 " Search upwards for tags file instead only locally
 if has('path_extra')
@@ -155,6 +155,7 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let s:separators = { 'left': "", 'right': "" }
   let s:subseparators = { 'left': "|", 'right': "|" }
   let s:clock_glyph = ''
+  let s:branch_glyph = '▲ '
   let g:lightline#gitdiff#indicator_added = '+'
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
@@ -168,6 +169,7 @@ else
   let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
   let s:subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
   let s:clock_glyph = ' '
+  let s:branch_glyph = ' '
   let g:lightline#gitdiff#indicator_added = ' '
   let g:lightline#gitdiff#indicator_deleted = ' '
   let g:lightline#gitdiff#indicator_modified = ' '
@@ -179,6 +181,9 @@ else
   let g:gitgutter_sign_removed_above_and_below = '{'
   let g:gitgutter_sign_modified_removed = ''
   "highlight GitGutterChange guifg=#8be9fd
+  function! StartifyEntryFormat()
+    return 'WebDevIconsGetFileTypeSymbol(absolute_path) ." ". entry_path'
+  endfunctio "
 endif
 
 let g:indentLine_char = '│'
@@ -222,6 +227,32 @@ if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 25
     let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn ]  ]
 endif
 
+function! LightlineMode()
+  let map = {
+		    \ 'n' : 'N',
+		    \ 'i' : 'I',
+		    \ 'R' : 'R',
+		    \ 'v' : 'v',
+		    \ 'V' : 'V',
+		    \ "\<C-v>": 'V-B',
+		    \ 'c' : 'C',
+		    \ 's' : 'S',
+		    \ 'S' : 'S-L',
+		    \ "\<C-s>": 'S-B',
+		    \ 't': 'T',
+		    \ }
+  let fname = expand('%:t')
+  return fname =~# '^__Tagbar__' ? 'Tagbar' :
+        \ fname ==# 'ControlP' ? 'CtrlP' :
+        \ fname ==# '__Gundo__' ? 'Gundo' :
+        \ fname ==# '__Gundo_Preview__' ? 'Gundo Preview' :
+        \ fname =~# 'NERD_tree' ? 'NERDTree' :
+        \ &ft ==# 'unite' ? 'Unite' :
+        \ &ft ==# 'vimfiler' ? 'VimFiler' :
+        \ &ft ==# 'vimshell' ? 'VimShell' :
+        \ winwidth(0) > 60 ? lightline#mode() : get(map, lightline#mode()[0], lightline#mode()[0])
+endfunction
+
 " source autoload/searchcount.vim
 function! LightlineModified()
   return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
@@ -239,27 +270,31 @@ endfunction
 
 function! LightlineFugitive()
   if exists('*FugitiveHead') && !empty(FugitiveHead())
-    return ' ' .. FugitiveHead()
+    return winwidth(0) > 70? s:branch_glyph .. FugitiveHead() : s:branch_glyph
   endif
   return ''
 endfunction
 
 function! FileTime()
-    let filename=expand("%")
-    let cached_ftime  = getftime(filename)
-    if cached_ftime==# -1 
-      return strftime("%H:%M:%S")
-    endif
-    let msg=s:clock_glyph
-    let year=strftime("%Y",cached_ftime)
-    let mandd=strftime("%m %d",cached_ftime)
-    if year !=# strftime("%Y")
-        return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
-    elseif mandd !=# strftime("%m %d")
-        return strftime("%b %d %H:%M:%S",cached_ftime)
-    endif
-    let msg=msg..strftime("%H:%M:%S",cached_ftime)
-    return msg
+  let fname = expand('%:t')
+  if fname =~# 'NERD_tree'
+    return ''
+  endif
+  let filename=expand("%")
+  let cached_ftime  = getftime(filename)
+  if cached_ftime==# -1
+    return strftime("%H:%M:%S")
+  endif
+  let msg=s:clock_glyph
+  let year=strftime("%Y",cached_ftime)
+  let mandd=strftime("%m %d",cached_ftime)
+  if year !=# strftime("%Y")
+    return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
+  elseif mandd !=# strftime("%m %d")
+    return strftime("%b %d %H:%M:%S",cached_ftime)
+  endif
+  let msg = (winwidth(0) > 70)? msg..strftime("%H:%M:%S",cached_ftime) : ((localtime() - cached_ftime) / 60) .. 'm'
+  return msg
 endfunction
 
 function! GitStatus()
@@ -309,27 +344,31 @@ endfunction
 " KEYBINDINGS {{{
 " Remap K to Esc because the man page feature is actually pretty annoying
 nnoremap K <ESC>
+nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
+noremap <up> <nop>
+noremap <down> <nop>
+noremap <left> <nop>
+noremap <right> <nop>
 
 " kitty opacity compatibility
 " let &t_ut=""
 
 nnoremap <leader>´ ``
 
-nnoremap <leader>bn :bn<CR>
-nnoremap <leader>nb :bp<CR>
-nnoremap <leader>bN :bp<CR>
+nnoremap <leader>bn <Cmd>bn<CR>
+nnoremap <leader>nb <Cmd>bp<CR>
+nnoremap <leader>bN <Cmd>bp<CR>
 
-nnoremap <leader>et :tab ter++kill=hup<CR>
+nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
 
 " NERDTree Mappings
-nnoremap <leader>ntt :NERDTreeToggle<CR>
-nnoremap <leader>ntf :NERDTreeFocus<CR>
-nnoremap <leader>ntc :NERDTreeClose<CR>
-nnoremap <leader>nte :NERDTreeExplore<CR>
-
+nnoremap <leader>ntt <Cmd>NERDTreeToggle<CR>
+nnoremap <leader>ntf <Cmd>NERDTreeFocus<CR>
+nnoremap <leader>ntc <Cmd>NERDTreeClose<CR>
+nnoremap <expr> <leader>nte "<Cmd>NERDTreeExplore " . expand("%:p:h") . "<CR><Cmd>pwd<CR><down>"
 " Fugitive mappings
 nnoremap <leader>fgp :Git push
-nnoremap <leader>fga :Git add %<CR>
+nnoremap <leader>fga <Cmd>Git add %<CR>
 nnoremap <leader>fgc :Git add %<CR>:Git commit -m "
 
 " Type jj to exit insert mode quickly.
@@ -421,8 +460,13 @@ tnoremap <esc><esc> <c-\><c-n>
 " nnoremap <F3> :NERDTreeToggle<cr>
 
 " Have nerdtree ignore certain files and directories.
-let NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$']
-
+let g:NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$', '\.webp$', '\.webm$']
+" More NERDTree options
+let g:NERDTreeShowHidden=1
+let g:NERDTreeMinimalUI=1
+let g:NERDTreeQuitOnOpen=3
+let g:NERDTreeMapUpdir='-'
+let g:NERDTreeShowLineNumbers=1
 " }}}
 
 " VIMSCRIPT {{{
@@ -479,8 +523,18 @@ augroup cursor_off
     autocmd WinEnter * set cursorline nocursorcolumn
 augroup END
 
-" let g:airline_theme='base16_dracula'
-" let g:indentLine_setColors = 0
+" change directory to the current buffer's file's parent file
+command CDC cd %:p:h
+
+augroup RestoreCursor
+  autocmd!
+  autocmd BufReadPost *
+    \ let line = line("'\"")
+    \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
+    \      && index(['xxd', 'gitrebase'], &filetype) == -1
+    \ |   execute "normal! g`\""
+    \ | endif
+augroup END
 
 if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
     set termguicolors
@@ -493,7 +547,7 @@ if has('gui_running')
 
     " Set a custom font you have installed on your computer.
     " Syntax: <font_name>\ <weight>\ <size>
-    set guifont=FiraCode\ Nerd\ Font\ Mono\ weight=450\ 13
+    set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
 
     " Display more of the file by default.
     " Hide the toolbar.
@@ -547,4 +601,6 @@ set statusline+=\ <\ %l,%c\ <\ @%p%%\ ▲
 set laststatus=2
 
 " }}}
+
+runtime ./autoload/functions.vim
 

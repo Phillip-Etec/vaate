@@ -43,14 +43,14 @@ function! s:search_term()
 endfunction
 
 function! searchcount#status() abort
-  if ! &hlsearch
+  if ! v:hlsearch
     return ''
   endif
   try
     let result = searchcount(#{recompute: 1, maxcount: -1})
-    if empty(result) || result.total ==# 0
-      return ''
-    endif
+    "if empty(result) || result.total ==# 0
+    "  return ''
+    "endif
     if result.incomplete ==# 1     " timed out
       return printf('[?/??]')
     elseif result.incomplete ==# 2 " max count exceeded
