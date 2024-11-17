@@ -1,0 +1,711 @@
+diff --git a/README.md b/README.md
+index b13d415..467a685 100644
+--- a/README.md
++++ b/README.md
+@@ -2,27 +2,36 @@
+ Vim configuration with pathogen runtime management, **V**im **a**s **a** **t**ext **e**ditor
+ 
+ # Installing submodules:
+-```
++```sh
+ (cd ~/.vim && git submodule update --init --recursive)
+ ```
+ # Maintanence:
+ 
+ ## Updating plugins:
+-```
++```sh
+ (cd ~/.vim && git submodule update --recursive --remote)
+ ```
+ 
+ ## Adding a plugin:
+-```
++```sh
+ (cd ~/.vim/bundle && REMOTE="https://github.com/weedeater/vim" && git submodule add $REMOTE)
+ ```
+ 
+ ## Adding an extra plugin:
+-```
++```sh
+ (cd ~/.vim/extra && REMOTE="https://github.com/weedeater/vim" && git submodule add $REMOTE)
+ ```
+ 
+ ## Removing a plugin should be done with git itself:
+-```
++```sh
+ (cd ~/.vim/bundle && PLUGIN='vim-weedeater' && git rm -f $PLUGIN)
+ ```
++## Plugin modifications:
++Make a diff file from submodules' changes:
++```sh
++git --no-pager diff --no-color --submodule=diff > patch.diff
++```
++then apply it:
++```sh
++patch -p1 < patch.diff || git apply patch.diff
++```
+diff --git a/autoload/functions.vim b/autoload/functions.vim
+index 8140810..ddc3157 100644
+--- a/autoload/functions.vim
++++ b/autoload/functions.vim
+@@ -1,3 +1,10 @@
++scriptencoding utf-8
++
++if exists("g:rc_loaded_functions")
++  finish
++endif
++let g:rc_loaded_functions = 1
++
+ function! functions#disable_italic()
+   let his = ''
+   redir => his
+@@ -12,3 +19,152 @@ function! functions#disable_italic()
+ endfunction
+ 
+ command! DisableItalic call functions#disable_italic()
++
++function! CoverYourselfInOil()
++    set hidden
++    if(&ft == 'startify' || expand("%:t") ==# '')
++        let w:prev_nodes = ['', '']
++        let w:prev_dir = ''
++        exec "NERDTreeExplore"
++        set nohidden
++        return
++    endif
++    let w:prev_nodes = (empty(get(w:, 'prev_nodes')))? ['', ''] : w:prev_nodes
++    let cached_t = expand("%:t")
++    let w:prev_nodes = (cached_t =~# 'NERD_tree' || cached_t ==# '')?
++                \[ cached_t, w:prev_nodes[1] ] : [ cached_t, cached_t ]
++    let w:prev_dir = (cached_t =~# 'NERD_tree' || cached_t ==# '')?
++                \w:prev_dir : expand("%:p:h")
++    exec "NERDTreeExplore " .. w:prev_dir
++    if (w:prev_nodes[0] =~# 'NERD_tree' )
++        exec "/" . w:prev_nodes[1]
++        normal n
++    else
++        exec "/" . w:prev_nodes[0]
++        normal n
++    endif
++"    nohlsearch
++    pwd
++    set nohidden
++endfunction
++
++function! LightlineMode()
++  let map = {
++		    \ 'n' : 'N',
++		    \ 'i' : 'I',
++		    \ 'R' : 'R',
++		    \ 'v' : 'v',
++		    \ 'V' : 'V',
++		    \ "\<C-v>": 'V-B',
++		    \ 'c' : 'C',
++		    \ 's' : 'S',
++		    \ 'S' : 'S-L',
++		    \ "\<C-s>": 'S-B',
++		    \ 't': 'T',
++		    \ }
++  let fname = expand('%:t')
++  return fname =~# '^__Tagbar__' ? 'Tagbar' :
++        \ fname ==# 'ControlP' ? 'CtrlP' :
++        \ fname ==# '__Gundo__' ? 'Gundo' :
++        \ fname ==# '__Gundo_Preview__' ? 'Gundo Preview' :
++        \ fname =~# 'NERD_tree' ? 'NERDTree' :
++        \ &ft ==# 'unite' ? 'Unite' :
++        \ &ft ==# 'vimfiler' ? 'VimFiler' :
++        \ &ft ==# 'vimshell' ? 'VimShell' :
++        \ winwidth(0) > 60 ? lightline#mode() : get(map, lightline#mode()[0], lightline#mode()[0])
++endfunction
++
++" source autoload/searchcount.vim
++function! LightlineModified()
++  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
++endfunction
++function! LightlineReadonly()
++  return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
++endfunction
++function! LightlineFilename()
++  return (LightlineReadonly() !=# '' ? LightlineReadonly() . ' ' : '') .
++        \ (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
++        \  &ft ==# 'unite' ? unite#get_status_string() :
++        \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
++        \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
++endfunction
++
++function! LightlineFugitive()
++  if exists('*FugitiveHead') && !empty(FugitiveHead())
++    return winwidth(0) > 70? g:rc_branch_glyph .. FugitiveHead() : g:rc_branch_glyph
++  endif
++  return ''
++endfunction
++
++function! FileTime()
++  let fname = expand('%:t')
++  if fname =~# 'NERD_tree'
++    return ''
++  endif
++  let filename=expand("%")
++  let cached_ftime  = getftime(filename)
++  if cached_ftime==# -1
++    return strftime("%H:%M:%S")
++  endif
++  let msg=g:rc_clock_glyph
++  let year=strftime("%Y",cached_ftime)
++  let mandd=strftime("%m %d",cached_ftime)
++  if year !=# strftime("%Y")
++    return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
++  elseif mandd !=# strftime("%m %d")
++    return strftime("%b %d %H:%M:%S",cached_ftime)
++  endif
++  let msg = (winwidth(0) > 70)? msg..strftime("%H:%M:%S",cached_ftime) : ((localtime() - cached_ftime) / 60) .. 'm'
++  return msg
++endfunction
++
++function! GitStatus()
++  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
++    let [a,m,r] = GitGutterGetHunkSummary()
++    return printf("%s%d %s%d %s%d",g:lightline#gitdiff#indicator_added, a,
++                                    \g:lightline#gitdiff#indicator_modified, m,
++                                    \g:lightline#gitdiff#indicator_deleted, r)
++  else
++    return ''
++  endif
++endfunction
++
++function! GitAdded()
++  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
++    let [a,m,r] = GitGutterGetHunkSummary()
++    return (a > 0)? printf("%s%d",g:lightline#gitdiff#indicator_added, a,) : ''
++  else
++    return ''
++  endif
++endfunction
++
++function! GitModified()
++  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
++    let [a,m,r] = GitGutterGetHunkSummary()
++    return (m > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_modified, m,) : ''
++  else
++    return ''
++  endif
++endfunction
++
++function! GitRemoved()
++  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
++    let [a,m,r] = GitGutterGetHunkSummary()
++    return (r > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_deleted, r,) : ''
++  else
++    return ''
++  endif
++endfunction
++
++function! Icon_Filename()
++  return winwidth(0) > 70 ? (strlen(&filetype) ?  WebDevIconsGetFileTypeSymbol()
++                    \.. ' ' .. LightlineFilename() .. Icon_Format() : LightlineFilename() ) 
++                    \: LightlineFilename()
++endfunction
++
++function! Icon_Format()
++    return (winwidth(0) > 70 && &fileformat !=# 'unix')? 
++                \( ' ' .. WebDevIconsGetFileFormatSymbol() ..' ') : ''
++  endfunction
++
++
+diff --git a/autoload/searchcount.vim b/autoload/searchcount.vim
+index db48818..f9af974 100644
+--- a/autoload/searchcount.vim
++++ b/autoload/searchcount.vim
+@@ -4,42 +4,13 @@
+ 
+ scriptencoding utf-8
+ 
+-function! searchcount#winwidth(...) abort
+-  let nr = get(a:000, 0, 0)
+-  " When statusline is on top, or using global statusline for Neovim
+-  " always return the number of columns
+-  if get(g:, 'airline_statusline_ontop', 0) || &laststatus > 2
+-    return &columns
+-  else
+-    return winwidth(nr)
+-  endif
+-endfunction
++if exists("g:rc_loaded_searchcount")
++  finish
++endif
++let g:rc_loaded_searchcount = 1
+ 
+-function! searchcount#shorten(text, winwidth, minwidth, ...)
+-  if searchcount#winwidth() < a:winwidth && len(split(a:text, '\zs')) > a:minwidth
+-    if get(a:000, 0, 0)
+-      " shorten from tail
+-      return '…'.matchstr(a:text, '.\{'.a:minwidth.'}$')
+-    else
+-      " shorten from beginning of string
+-      return matchstr(a:text, '^.\{'.a:minwidth.'}').'…'
+-    endif
+-  else
+-    return a:text
+-  endif
+-endfunction
+-
+-function! s:search_term()
+-  let show_search_term = get(g:, 'searchcount#show_search_term', 1)
+-  let search_term_limit = get(g:, 'searchcount#search_term_limit', 8)
+-
+-  if show_search_term == 0
+-    return ''
+-  endif
+-  " shorten for all width smaller than 300 (this is just a guess)
+-  " this uses a non-breaking space, because it looks like
+-  " a leading space is stripped :/
+-  return "\ua0" .  '/' . searchcount#shorten(getreg('/'), 300, search_term_limit)
++function! searchcount#winwidth(...) abort
++  return winwidth(get(a:000, 0, 0))
+ endfunction
+ 
+ function! searchcount#status() abort
+Submodule bundle/dracula contains modified content
+diff --git a/bundle/dracula/autoload/lightline/colorscheme/dracula.vim b/bundle/dracula/autoload/lightline/colorscheme/dracula.vim
+index 42ed79d..c18f4ff 100644
+--- a/bundle/dracula/autoload/lightline/colorscheme/dracula.vim
++++ b/bundle/dracula/autoload/lightline/colorscheme/dracula.vim
+@@ -6,6 +6,7 @@
+ " =============================================================================
+ 
+ let s:black    = g:dracula#palette.bg
++let s:pitchblack= g:dracula#palette.bgdarker
+ let s:gray     = g:dracula#palette.selection
+ let s:white    = g:dracula#palette.fg
+ let s:darkblue = g:dracula#palette.comment
+@@ -15,25 +16,31 @@ let s:orange   = g:dracula#palette.orange
+ let s:purple   = g:dracula#palette.purple
+ let s:red      = g:dracula#palette.red
+ let s:yellow   = g:dracula#palette.yellow
++let s:pink   = g:dracula#palette.pink
+ 
+ if exists('g:lightline')
+ 
+-  let s:p = {'normal': {}, 'inactive': {}, 'insert': {}, 'replace': {}, 'visual': {}, 'tabline': {}}
+-  let s:p.normal.left = [ [ s:black, s:purple ], [ s:cyan, s:gray ] ]
+-  let s:p.normal.right = [ [ s:black, s:purple ], [ s:white, s:darkblue ] ]
+-  let s:p.inactive.right = [ [ s:black, s:darkblue ], [ s:white, s:black ] ]
+-  let s:p.inactive.left =  [ [ s:cyan, s:black ], [ s:white, s:black ] ]
+-  let s:p.insert.left = [ [ s:black, s:green ], [ s:cyan, s:gray ] ]
+-  let s:p.replace.left = [ [ s:black, s:red ], [ s:cyan, s:gray ] ]
+-  let s:p.visual.left = [ [ s:black, s:orange ], [ s:cyan, s:gray ] ]
++  let s:p = {'normal': {}, 'command': {}, 'inactive': {}, 'insert': {}, 'replace': {}, 'visual': {}, 'tabline': {}}
++  let s:p.normal.left = [ [ s:black, s:purple, 'bold' ], [  s:white, s:darkblue ] ]
++  let s:p.normal.right = [ [ s:black, s:purple, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.command.left = [ [ s:black, s:orange, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.command.right = [ [ s:black, s:orange, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.inactive.right = [ [ s:white, s:gray ], [ s:white, s:gray ] ]
++  let s:p.inactive.left =  [ [ s:white, s:gray ], [ s:white, s:gray ] ]
++  let s:p.insert.left = [ [ s:black, s:green, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.insert.right = [ [ s:black, s:green, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.replace.left = [ [ s:black, s:red, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.replace.right = [ [ s:black, s:red, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.visual.left = [ [ s:black, s:yellow, 'bold' ], [ s:white, s:darkblue ] ]
++  let s:p.visual.right = [ [ s:black, s:yellow, 'bold' ], [ s:white, s:darkblue ] ]
+   let s:p.normal.middle = [ [ s:white, s:gray ] ]
+   let s:p.inactive.middle = [ [ s:white, s:gray ] ]
+   let s:p.tabline.left = [ [ s:darkblue, s:gray ] ]
+-  let s:p.tabline.tabsel = [ [ s:cyan, s:black ] ]
++  let s:p.tabline.tabsel = [ [ s:black, s:purple ] ]
+   let s:p.tabline.middle = [ [ s:darkblue, s:gray ] ]
+   let s:p.tabline.right = copy(s:p.normal.right)
+-  let s:p.normal.error = [ [ s:red, s:black ] ]
+-  let s:p.normal.warning = [ [ s:yellow, s:black ] ]
++  let s:p.normal.error = [ [ s:red, s:black, 'bold' ] ]
++  let s:p.normal.warning = [ [ s:orange, s:black, 'bold' ] ]
+ 
+   let g:lightline#colorscheme#dracula#palette = lightline#colorscheme#flatten(s:p)
+ 
+Submodule bundle/nerdtree contains modified content
+diff --git a/bundle/nerdtree/autoload/nerdtree/ui_glue.vim b/bundle/nerdtree/autoload/nerdtree/ui_glue.vim
+index c5c9618..df0834f 100644
+--- a/bundle/nerdtree/autoload/nerdtree/ui_glue.vim
++++ b/bundle/nerdtree/autoload/nerdtree/ui_glue.vim
+@@ -15,7 +15,7 @@ function! nerdtree#ui_glue#createDefaultBindings() abort
+     call NERDTreeAddKeyMap({ 'key': '<2-LeftMouse>', 'scope': 'all', 'callback': s.'activateAll' })
+ 
+     call NERDTreeAddKeyMap({ 'key': g:NERDTreeMapCustomOpen, 'scope':'FileNode', 'callback': s.'customOpenFile'})
+-    call NERDTreeAddKeyMap({ 'key': g:NERDTreeMapCustomOpen, 'scope':'DirNode', 'callback': s.'customOpenDir'})
++    call NERDTreeAddKeyMap({ 'key': g:NERDTreeMapCustomOpen, 'scope':'DirNode', 'callback': s . 'chRoot'})
+     call NERDTreeAddKeyMap({ 'key': g:NERDTreeMapCustomOpen, 'scope':'Bookmark', 'callback': s.'customOpenBookmark'})
+     call NERDTreeAddKeyMap({ 'key': g:NERDTreeMapCustomOpen, 'scope':'all', 'callback': s.'activateAll' })
+ 
+@@ -188,6 +188,7 @@ endfunction
+ " changes the current root to the selected one
+ function! s:chRoot(node) abort
+     call b:NERDTree.changeRoot(a:node)
++    normal 2gg
+ endfunction
+ 
+ " FUNCTION: s:nerdtree#ui_glue#chRootCwd() {{{1
+Submodule bundle/nerdtree-visual-selection contains modified content
+diff --git a/bundle/nerdtree-visual-selection/ftplugin/nerdtree.vim b/bundle/nerdtree-visual-selection/ftplugin/nerdtree.vim
+index fd44bd8..6a40258 100644
+--- a/bundle/nerdtree-visual-selection/ftplugin/nerdtree.vim
++++ b/bundle/nerdtree-visual-selection/ftplugin/nerdtree.vim
+@@ -108,10 +108,10 @@ endfunction
+ " --------------------------------------------------------------------------------
+ " Main Processor
+ function! s:ProcessSelection(action, setup, callback, cleanup, closeWhenDone, confirmEachNode) range
+-    if b:NERDTree.isWinTree()
+-        call nerdtree#echo("Command is unavailable. Open NERDTree with :NERDTree, :NERDTreeToggle, or :NERDTreeFocus instead.")
+-        return
+-    endif
++    "if b:NERDTree.isWinTree()
++    "    call nerdtree#echo("Command is unavailable. Open NERDTree with :NERDTree, :NERDTreeToggle, or :NERDTreeFocus instead.")
++    "    return
++    "endif
+ 
+     if type(a:setup) == v:t_func
+         if !a:setup()
+Submodule extra/vim-visual-multi contains modified content
+diff --git a/extra/vim-visual-multi/autoload/vm/maps/all.vim b/extra/vim-visual-multi/autoload/vm/maps/all.vim
+index 2e51d5e..68a9f32 100644
+--- a/extra/vim-visual-multi/autoload/vm/maps/all.vim
++++ b/extra/vim-visual-multi/autoload/vm/maps/all.vim
+@@ -55,8 +55,8 @@ fun! vm#maps#all#permanent() abort
+     let maps["Add Cursor At Pos"][0]     = leader.'\'
+     let maps["Start Regex Search"][0]    = leader.'/'
+     let maps["Select All"][0]            = leader.'A'
+-    let maps["Add Cursor Down"][0]       = '<C-Down>'
+-    let maps["Add Cursor Up"][0]         = '<C-Up>'
++    let maps["Add Cursor Down"][0]       = 'ç'
++    let maps["Add Cursor Up"][0]         = 'Ç'
+     let maps["Select l"][0]              = '<S-Right>'
+     let maps["Select h"][0]              = '<S-Left>'
+     let maps["Visual Regex"][0]          = visual.'/'
+diff --git a/vimrc b/vimrc
+index 25aa49a..c0bfe31 100644
+--- a/vimrc
++++ b/vimrc
+@@ -36,7 +36,7 @@ set cursorline " faster to not render
+ set nocursorcolumn " slower than line but doesn't break ligatures
+ 
+ " Set an 80 column border for good coding style
+-set cc=80
++set colorcolumn=80
+ 
+ " Set shift width to 4 spaces.
+ set shiftwidth=4
+@@ -121,7 +121,6 @@ if executable("xsel")
+   function! PreserveClipboard()
+     call system("xsel -ib", getreg('+'))
+   endfunction
+-
+   function! PreserveClipboadAndSuspend()
+     call PreserveClipboard()
+     suspend
+@@ -139,37 +138,38 @@ endif
+ 
+ if empty($INFECT) || $INFECT == '0'
+     execute pathogen#infect()
+-    let s:difffn = 'diff'
++    let g:rc_difffn = 'diff'
+ elseif $INFECT == '1'
+     execute pathogen#infect('bundle/{}', 'extra/{}')
+-    let s:difffn = 'diffcolor'
++    let g:rc_difffn = has('gui_running')? 'diff' : 'diffcolor'
+     set updatetime=230
+ else
+     execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
+-    let s:difffn = 'diff'
++    let g:rc_difffn = 'diff'
+ endif
+ 
+ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
+   colorscheme slate
+-  let s:colors = '16color'
+-  let s:separators = { 'left': "", 'right': "" }
+-  let s:subseparators = { 'left': "|", 'right': "|" }
+-  let s:clock_glyph = ''
+-  let s:branch_glyph = '▲ '
++  let g:rc_colors = '16color'
++  let g:rc_separators = { 'left': "", 'right': "" }
++  let g:rc_subseparators = { 'left': "|", 'right': "|" }
++  let g:rc_clock_glyph = ''
++  let g:rc_branch_glyph = '▲ '
+   let g:lightline#gitdiff#indicator_added = '+'
+   let g:lightline#gitdiff#indicator_deleted = '-'
+   let g:lightline#gitdiff#indicator_modified = '~'
+   let g:lightline#gitdiff#separator = ' '
+   highlight GitGutterChange ctermbg=NONE ctermfg=6
++  let g:webdevicons_enable = 0
+   let g:webdevicons_enable_nerdtree = 0
+ else
+   set noshowmode
+   colorscheme dracula
+-  let s:colors = 'dracula'
+-  let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
+-  let s:subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
+-  let s:clock_glyph = ' '
+-  let s:branch_glyph = ' '
++  let g:rc_colors = 'dracula'
++  let g:rc_separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
++  let g:rc_subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
++  let g:rc_clock_glyph = ' '
++  let g:rc_branch_glyph = ' '
+   let g:lightline#gitdiff#indicator_added = ' '
+   let g:lightline#gitdiff#indicator_deleted = ' '
+   let g:lightline#gitdiff#indicator_modified = ' '
+@@ -180,29 +180,33 @@ else
+   let g:gitgutter_sign_removed_first_line = '▲'
+   let g:gitgutter_sign_removed_above_and_below = '{'
+   let g:gitgutter_sign_modified_removed = ''
++  let g:webdevicons_enable_startify = 1
+   "highlight GitGutterChange guifg=#8be9fd
+   function! StartifyEntryFormat()
+     return 'WebDevIconsGetFileTypeSymbol(absolute_path) ." ". entry_path'
+-  endfunctio "
++  endfunction
+ endif
+ 
++runtime ./autoload/functions.vim
++
+ let g:indentLine_char = '│'
+ let g:lightline = {
+-      \ 'colorscheme': s:colors,
+-      \ 'separator': s:separators,
+-      \ 'subseparator': s:subseparators,
++      \ 'colorscheme': g:rc_colors,
++      \ 'separator': g:rc_separators,
++      \ 'subseparator': g:rc_subseparators,
+       \ 'active': {
+       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
+-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn, 'filetype' ]  ]
++      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn, 'filetype' ]  ]
+       \ },
+       \ 'inactive': {
+       \   'left': [[ 'filename' ]], 'right': [ [ 'lineinfo' ] ]
+       \ },
+       \ 'component_function': {
++      \   'mode': 'LightlineMode',
+       \   'fugitive': 'LightlineFugitive',
+       \   'filename': 'LightlineFilename',
+       \   'filemodified': 'FileTime',
+-      \   'searchindex': 'searchcount#status',
++      \   'searchindex': 'SearchcountStatus',
+       \   'diff': 'lightline#gitdiff#get',
+       \   'icon_filename': 'Icon_Filename',
+       \ },
+@@ -222,127 +226,15 @@ hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
+ hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
+ highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
+ 
+-if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
++if (has('termguicolors') || &termguicolors) &&  ! has('gui_running') || &t_Co == 256
+     let g:lightline.active.left = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ]  ]
+-    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn ]  ]
++    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ]  ]
+ endif
+ 
+-function! LightlineMode()
+-  let map = {
+-		    \ 'n' : 'N',
+-		    \ 'i' : 'I',
+-		    \ 'R' : 'R',
+-		    \ 'v' : 'v',
+-		    \ 'V' : 'V',
+-		    \ "\<C-v>": 'V-B',
+-		    \ 'c' : 'C',
+-		    \ 's' : 'S',
+-		    \ 'S' : 'S-L',
+-		    \ "\<C-s>": 'S-B',
+-		    \ 't': 'T',
+-		    \ }
+-  let fname = expand('%:t')
+-  return fname =~# '^__Tagbar__' ? 'Tagbar' :
+-        \ fname ==# 'ControlP' ? 'CtrlP' :
+-        \ fname ==# '__Gundo__' ? 'Gundo' :
+-        \ fname ==# '__Gundo_Preview__' ? 'Gundo Preview' :
+-        \ fname =~# 'NERD_tree' ? 'NERDTree' :
+-        \ &ft ==# 'unite' ? 'Unite' :
+-        \ &ft ==# 'vimfiler' ? 'VimFiler' :
+-        \ &ft ==# 'vimshell' ? 'VimShell' :
+-        \ winwidth(0) > 60 ? lightline#mode() : get(map, lightline#mode()[0], lightline#mode()[0])
+-endfunction
+-
+-" source autoload/searchcount.vim
+-function! LightlineModified()
+-  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
+-endfunction
+-function! LightlineReadonly()
+-  return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
+-endfunction
+-function! LightlineFilename()
+-  return (LightlineReadonly() !=# '' ? LightlineReadonly() . ' ' : '') .
+-        \ (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
+-        \  &ft ==# 'unite' ? unite#get_status_string() :
+-        \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
+-        \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
+-endfunction
+-
+-function! LightlineFugitive()
+-  if exists('*FugitiveHead') && !empty(FugitiveHead())
+-    return winwidth(0) > 70? s:branch_glyph .. FugitiveHead() : s:branch_glyph
+-  endif
+-  return ''
+-endfunction
+-
+-function! FileTime()
+-  let fname = expand('%:t')
+-  if fname =~# 'NERD_tree'
+-    return ''
+-  endif
+-  let filename=expand("%")
+-  let cached_ftime  = getftime(filename)
+-  if cached_ftime==# -1
+-    return strftime("%H:%M:%S")
+-  endif
+-  let msg=s:clock_glyph
+-  let year=strftime("%Y",cached_ftime)
+-  let mandd=strftime("%m %d",cached_ftime)
+-  if year !=# strftime("%Y")
+-    return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
+-  elseif mandd !=# strftime("%m %d")
+-    return strftime("%b %d %H:%M:%S",cached_ftime)
+-  endif
+-  let msg = (winwidth(0) > 70)? msg..strftime("%H:%M:%S",cached_ftime) : ((localtime() - cached_ftime) / 60) .. 'm'
+-  return msg
+-endfunction
+-
+-function! GitStatus()
+-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+-    let [a,m,r] = GitGutterGetHunkSummary()
+-    return printf("%s%d %s%d %s%d",g:lightline#gitdiff#indicator_added, a,
+-                                    \g:lightline#gitdiff#indicator_modified, m,
+-                                    \g:lightline#gitdiff#indicator_deleted, r)
+-  else
+-    return ''
+-  endif
+-endfunction
+-
+-function! GitAdded()
+-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+-    let [a,m,r] = GitGutterGetHunkSummary()
+-    return (a > 0)? printf("%s%d",g:lightline#gitdiff#indicator_added, a,) : ''
+-  else
+-    return ''
+-  endif
+-endfunction
+-
+-function! GitModified()
+-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+-    let [a,m,r] = GitGutterGetHunkSummary()
+-    return (m > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_modified, m,) : ''
+-  else
+-    return ''
+-  endif
+-endfunction
+-
+-function! GitRemoved()
+-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
+-    let [a,m,r] = GitGutterGetHunkSummary()
+-    return (r > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_deleted, r,) : ''
+-  else
+-    return ''
+-  endif
+-endfunction
+-
+-function! Icon_Filename()
+-  return winwidth(0) > 70 ? (strlen(&filetype) ?  WebDevIconsGetFileTypeSymbol() .. ' ' .. LightlineFilename()  : '') : LightlineFilename()
+-endfunction
+-
+ " }}}
+ 
+ " KEYBINDINGS {{{
+-" Remap K to Esc because the man page feature is actually pretty annoying
++
+ nnoremap K <ESC>
+ nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
+ noremap <up> <nop>
+@@ -365,7 +257,8 @@ nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
+ nnoremap <leader>ntt <Cmd>NERDTreeToggle<CR>
+ nnoremap <leader>ntf <Cmd>NERDTreeFocus<CR>
+ nnoremap <leader>ntc <Cmd>NERDTreeClose<CR>
+-nnoremap <expr> <leader>nte "<Cmd>NERDTreeExplore " . expand("%:p:h") . "<CR><Cmd>pwd<CR><down>"
++nnoremap <leader>cyo <Cmd>call CoverYourselfInOil()<CR>
++
+ " Fugitive mappings
+ nnoremap <leader>fgp :Git push
+ nnoremap <leader>fga <Cmd>Git add %<CR>
+@@ -466,6 +359,8 @@ let g:NERDTreeShowHidden=1
+ let g:NERDTreeMinimalUI=1
+ let g:NERDTreeQuitOnOpen=3
+ let g:NERDTreeMapUpdir='-'
++let g:NERDTreeMapJumpNextSibling="J"
++let g:NERDTreeMapJumpPrevSibling="K"
+ let g:NERDTreeShowLineNumbers=1
+ " }}}
+ 
+@@ -502,7 +397,7 @@ augroup END
+ " This allows you to undo changes to a file even after saving it.
+ if version >= 703
+     " Enable undofile and set undodir and backupdir
+-    let s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
++    let  s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
+     let &backupdir = expand(s:dir) . '/backup//'
+     let &undodir   = expand(s:dir) . '/undo//'
+     let &directory = expand(s:dir) . '/swp//'
+@@ -519,14 +414,19 @@ end
+ " Display cursorline and cursorcolumn ONLY in active window.
+ augroup cursor_off
+     autocmd!
+-    autocmd WinLeave * set nocursorline nocursorcolumn
+-    autocmd WinEnter * set cursorline nocursorcolumn
++    autocmd WinLeave * set nocursorline nocursorcolumn colorcolumn=0
++    autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
++augroup END
++
++augroup resize_splits
++  autocmd!
++  autocmd VimResized * wincmd =
+ augroup END
+ 
+ " change directory to the current buffer's file's parent file
+ command CDC cd %:p:h
+ 
+-augroup RestoreCursor
++augroup restore_cursor
+   autocmd!
+   autocmd BufReadPost *
+     \ let line = line("'\"")
+@@ -548,27 +448,21 @@ if has('gui_running')
+     " Set a custom font you have installed on your computer.
+     " Syntax: <font_name>\ <weight>\ <size>
+     set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
+-
+-    " Display more of the file by default.
+     " Hide the toolbar.
+     set guioptions-=T
+-
+     " Hide the the left-side scroll bar.
+     set guioptions-=L
+-
+     " Hide the the left-side scroll bar.
+     set guioptions-=r
+-
+     " Hide the the menu bar.
+     set guioptions-=m
+-
+     " Hide the the bottom scroll bar.
+     set guioptions-=b
+ 
+     " Map the F4 key to toggle the menu, toolbar, and scroll bar.
+     " <Bar> is the pipe character.
+     " <CR> is the enter key.
+-    nnoremap <F9> :if &guioptions=~#'mTr'<Bar>
++    nnoremap <F9> <Cmd>if &guioptions=~#'mTr'<Bar>
+                 \set guioptions-=mTr<Bar>
+                 \else<Bar>
+                 \set guioptions+=mTr<Bar>
+@@ -602,5 +496,3 @@ set laststatus=2
+ 
+ " }}}
+ 
+-runtime ./autoload/functions.vim
+-

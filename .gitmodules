@@ -53,3 +53,7 @@
 	url = https://github.com/ryanoasis/vim-devicons
 	branch = master
 	update = rebase
+[submodule "bundle/nerdtree-visual-selection"]
+	path = bundle/nerdtree-visual-selection
+	url = https://github.com/PhilRunninger/nerdtree-visual-selection
+	branch = master

@@ -1,3 +1,10 @@
+scriptencoding utf-8
+
+if exists("g:rc_loaded_functions")
+  finish
+endif
+let g:rc_loaded_functions = 1
+
 function! functions#disable_italic()
   let his = ''
   redir => his
@@ -12,3 +19,152 @@ function! functions#disable_italic()
 endfunction
 
 command! DisableItalic call functions#disable_italic()
+
+function! CoverYourselfInOil()
+    set hidden
+    if(&ft == 'startify' || expand("%:t") ==# '')
+        let w:prev_nodes = ['', '']
+        let w:prev_dir = ''
+        exec "NERDTreeExplore"
+        set nohidden
+        return
+    endif
+    let w:prev_nodes = (empty(get(w:, 'prev_nodes')))? ['', ''] : w:prev_nodes
+    let cached_t = expand("%:t")
+    let w:prev_nodes = (cached_t =~# 'NERD_tree' || cached_t ==# '')?
+                \[ cached_t, w:prev_nodes[1] ] : [ cached_t, cached_t ]
+    let w:prev_dir = (cached_t =~# 'NERD_tree' || cached_t ==# '')?
+                \w:prev_dir : expand("%:p:h")
+    exec "NERDTreeExplore " .. w:prev_dir
+    if (w:prev_nodes[0] =~# 'NERD_tree' )
+        exec "/" . w:prev_nodes[1]
+        normal n
+    else
+        exec "/" . w:prev_nodes[0]
+        normal n
+    endif
+"    nohlsearch
+    pwd
+    set nohidden
+endfunction
+
+function! LightlineMode()
+  let map = {
+		    \ 'n' : 'N',
+		    \ 'i' : 'I',
+		    \ 'R' : 'R',
+		    \ 'v' : 'v',
+		    \ 'V' : 'V',
+		    \ "\<C-v>": 'V-B',
+		    \ 'c' : 'C',
+		    \ 's' : 'S',
+		    \ 'S' : 'S-L',
+		    \ "\<C-s>": 'S-B',
+		    \ 't': 'T',
+		    \ }
+  let fname = expand('%:t')
+  return fname =~# '^__Tagbar__' ? 'Tagbar' :
+        \ fname ==# 'ControlP' ? 'CtrlP' :
+        \ fname ==# '__Gundo__' ? 'Gundo' :
+        \ fname ==# '__Gundo_Preview__' ? 'Gundo Preview' :
+        \ fname =~# 'NERD_tree' ? 'NERDTree' :
+        \ &ft ==# 'unite' ? 'Unite' :
+        \ &ft ==# 'vimfiler' ? 'VimFiler' :
+        \ &ft ==# 'vimshell' ? 'VimShell' :
+        \ winwidth(0) > 60 ? lightline#mode() : get(map, lightline#mode()[0], lightline#mode()[0])
+endfunction
+
+" source autoload/searchcount.vim
+function! LightlineModified()
+  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
+endfunction
+function! LightlineReadonly()
+  return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
+endfunction
+function! LightlineFilename()
+  return (LightlineReadonly() !=# '' ? LightlineReadonly() . ' ' : '') .
+        \ (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
+        \  &ft ==# 'unite' ? unite#get_status_string() :
+        \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
+        \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
+endfunction
+
+function! LightlineFugitive()
+  if exists('*FugitiveHead') && !empty(FugitiveHead())
+    return winwidth(0) > 70? g:rc_branch_glyph .. FugitiveHead() : g:rc_branch_glyph
+  endif
+  return ''
+endfunction
+
+function! FileTime()
+  let fname = expand('%:t')
+  if fname =~# 'NERD_tree'
+    return ''
+  endif
+  let filename=expand("%")
+  let cached_ftime  = getftime(filename)
+  if cached_ftime==# -1
+    return strftime("%H:%M:%S")
+  endif
+  let msg=g:rc_clock_glyph
+  let year=strftime("%Y",cached_ftime)
+  let mandd=strftime("%m %d",cached_ftime)
+  if year !=# strftime("%Y")
+    return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
+  elseif mandd !=# strftime("%m %d")
+    return strftime("%b %d %H:%M:%S",cached_ftime)
+  endif
+  let msg = (winwidth(0) > 70)? msg..strftime("%H:%M:%S",cached_ftime) : ((localtime() - cached_ftime) / 60) .. 'm'
+  return msg
+endfunction
+
+function! GitStatus()
+  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return printf("%s%d %s%d %s%d",g:lightline#gitdiff#indicator_added, a,
+                                    \g:lightline#gitdiff#indicator_modified, m,
+                                    \g:lightline#gitdiff#indicator_deleted, r)
+  else
+    return ''
+  endif
+endfunction
+
+function! GitAdded()
+  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (a > 0)? printf("%s%d",g:lightline#gitdiff#indicator_added, a,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! GitModified()
+  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (m > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_modified, m,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! GitRemoved()
+  if exists('*FugitiveStatusline') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveStatusline())
+    let [a,m,r] = GitGutterGetHunkSummary()
+    return (r > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_deleted, r,) : ''
+  else
+    return ''
+  endif
+endfunction
+
+function! Icon_Filename()
+  return winwidth(0) > 70 ? (strlen(&filetype) ?  WebDevIconsGetFileTypeSymbol()
+                    \.. ' ' .. LightlineFilename() .. Icon_Format() : LightlineFilename() ) 
+                    \: LightlineFilename()
+endfunction
+
+function! Icon_Format()
+    return (winwidth(0) > 70 && &fileformat !=# 'unix')? 
+                \( ' ' .. WebDevIconsGetFileFormatSymbol() ..' ') : ''
+  endfunction
+
+

@@ -36,7 +36,7 @@ set cursorline " faster to not render
 set nocursorcolumn " slower than line but doesn't break ligatures
 
 " Set an 80 column border for good coding style
-set cc=80
+set colorcolumn=80
 
 " Set shift width to 4 spaces.
 set shiftwidth=4
@@ -121,7 +121,6 @@ if executable("xsel")
   function! PreserveClipboard()
     call system("xsel -ib", getreg('+'))
   endfunction
-
   function! PreserveClipboadAndSuspend()
     call PreserveClipboard()
     suspend
@@ -139,37 +138,38 @@ endif
 
 if empty($INFECT) || $INFECT == '0'
     execute pathogen#infect()
-    let s:difffn = 'diff'
+    let g:rc_difffn = 'diff'
 elseif $INFECT == '1'
     execute pathogen#infect('bundle/{}', 'extra/{}')
-    let s:difffn = 'diffcolor'
+    let g:rc_difffn = has('gui_running')? 'diff' : 'diffcolor'
     set updatetime=230
 else
     execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
-    let s:difffn = 'diff'
+    let g:rc_difffn = 'diff'
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
   colorscheme slate
-  let s:colors = '16color'
-  let s:separators = { 'left': "", 'right': "" }
-  let s:subseparators = { 'left': "|", 'right': "|" }
-  let s:clock_glyph = ''
-  let s:branch_glyph = '▲ '
+  let g:rc_colors = '16color'
+  let g:rc_separators = { 'left': "", 'right': "" }
+  let g:rc_subseparators = { 'left': "|", 'right': "|" }
+  let g:rc_clock_glyph = ''
+  let g:rc_branch_glyph = '▲ '
   let g:lightline#gitdiff#indicator_added = '+'
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
   let g:lightline#gitdiff#separator = ' '
   highlight GitGutterChange ctermbg=NONE ctermfg=6
+  let g:webdevicons_enable = 0
   let g:webdevicons_enable_nerdtree = 0
 else
   set noshowmode
   colorscheme dracula
-  let s:colors = 'dracula'
-  let s:separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
-  let s:subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
-  let s:clock_glyph = ' '
-  let s:branch_glyph = ' '
+  let g:rc_colors = 'dracula'
+  let g:rc_separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
+  let g:rc_subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
+  let g:rc_clock_glyph = ' '
+  let g:rc_branch_glyph = ' '
   let g:lightline#gitdiff#indicator_added = ' '
   let g:lightline#gitdiff#indicator_deleted = ' '
   let g:lightline#gitdiff#indicator_modified = ' '
@@ -180,29 +180,33 @@ else
   let g:gitgutter_sign_removed_first_line = '▲'
   let g:gitgutter_sign_removed_above_and_below = '{'
   let g:gitgutter_sign_modified_removed = ''
+  let g:webdevicons_enable_startify = 1
   "highlight GitGutterChange guifg=#8be9fd
   function! StartifyEntryFormat()
     return 'WebDevIconsGetFileTypeSymbol(absolute_path) ." ". entry_path'
-  endfunctio "
+  endfunction
 endif
+
+runtime ./autoload/functions.vim
 
 let g:indentLine_char = '│'
 let g:lightline = {
-      \ 'colorscheme': s:colors,
-      \ 'separator': s:separators,
-      \ 'subseparator': s:subseparators,
+      \ 'colorscheme': g:rc_colors,
+      \ 'separator': g:rc_separators,
+      \ 'subseparator': g:rc_subseparators,
       \ 'active': {
       \   'left': [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'filename' ]  ],
-      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn, 'filetype' ]  ]
+      \   'right': [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn, 'filetype' ]  ]
       \ },
       \ 'inactive': {
       \   'left': [[ 'filename' ]], 'right': [ [ 'lineinfo' ] ]
       \ },
       \ 'component_function': {
+      \   'mode': 'LightlineMode',
       \   'fugitive': 'LightlineFugitive',
       \   'filename': 'LightlineFilename',
       \   'filemodified': 'FileTime',
-      \   'searchindex': 'searchcount#status',
+      \   'searchindex': 'SearchcountStatus',
       \   'diff': 'lightline#gitdiff#get',
       \   'icon_filename': 'Icon_Filename',
       \ },
@@ -222,127 +226,15 @@ hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
 hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
 highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
 
-if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
+if (has('termguicolors') || &termguicolors) &&  ! has('gui_running') || &t_Co == 256
     let g:lightline.active.left = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ]  ]
-    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ s:difffn ]  ]
+    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ]  ]
 endif
-
-function! LightlineMode()
-  let map = {
-		    \ 'n' : 'N',
-		    \ 'i' : 'I',
-		    \ 'R' : 'R',
-		    \ 'v' : 'v',
-		    \ 'V' : 'V',
-		    \ "\<C-v>": 'V-B',
-		    \ 'c' : 'C',
-		    \ 's' : 'S',
-		    \ 'S' : 'S-L',
-		    \ "\<C-s>": 'S-B',
-		    \ 't': 'T',
-		    \ }
-  let fname = expand('%:t')
-  return fname =~# '^__Tagbar__' ? 'Tagbar' :
-        \ fname ==# 'ControlP' ? 'CtrlP' :
-        \ fname ==# '__Gundo__' ? 'Gundo' :
-        \ fname ==# '__Gundo_Preview__' ? 'Gundo Preview' :
-        \ fname =~# 'NERD_tree' ? 'NERDTree' :
-        \ &ft ==# 'unite' ? 'Unite' :
-        \ &ft ==# 'vimfiler' ? 'VimFiler' :
-        \ &ft ==# 'vimshell' ? 'VimShell' :
-        \ winwidth(0) > 60 ? lightline#mode() : get(map, lightline#mode()[0], lightline#mode()[0])
-endfunction
-
-" source autoload/searchcount.vim
-function! LightlineModified()
-  return &ft =~# 'help\|vimfiler' ? '' : &modified ? '[+]' : &modifiable ? '' : '[-]'
-endfunction
-function! LightlineReadonly()
-  return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
-endfunction
-function! LightlineFilename()
-  return (LightlineReadonly() !=# '' ? LightlineReadonly() . ' ' : '') .
-        \ (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
-        \  &ft ==# 'unite' ? unite#get_status_string() :
-        \ expand('%:t') !=# '' ? expand('%:t') : '[No Name]') .
-        \ (LightlineModified() !=# '' ? ' ' . LightlineModified() : '')
-endfunction
-
-function! LightlineFugitive()
-  if exists('*FugitiveHead') && !empty(FugitiveHead())
-    return winwidth(0) > 70? s:branch_glyph .. FugitiveHead() : s:branch_glyph
-  endif
-  return ''
-endfunction
-
-function! FileTime()
-  let fname = expand('%:t')
-  if fname =~# 'NERD_tree'
-    return ''
-  endif
-  let filename=expand("%")
-  let cached_ftime  = getftime(filename)
-  if cached_ftime==# -1
-    return strftime("%H:%M:%S")
-  endif
-  let msg=s:clock_glyph
-  let year=strftime("%Y",cached_ftime)
-  let mandd=strftime("%m %d",cached_ftime)
-  if year !=# strftime("%Y")
-    return strftime("%b %d,%Y@%H:%M:%S",cached_ftime)
-  elseif mandd !=# strftime("%m %d")
-    return strftime("%b %d %H:%M:%S",cached_ftime)
-  endif
-  let msg = (winwidth(0) > 70)? msg..strftime("%H:%M:%S",cached_ftime) : ((localtime() - cached_ftime) / 60) .. 'm'
-  return msg
-endfunction
-
-function! GitStatus()
-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
-    let [a,m,r] = GitGutterGetHunkSummary()
-    return printf("%s%d %s%d %s%d",g:lightline#gitdiff#indicator_added, a,
-                                    \g:lightline#gitdiff#indicator_modified, m,
-                                    \g:lightline#gitdiff#indicator_deleted, r)
-  else
-    return ''
-  endif
-endfunction
-
-function! GitAdded()
-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
-    let [a,m,r] = GitGutterGetHunkSummary()
-    return (a > 0)? printf("%s%d",g:lightline#gitdiff#indicator_added, a,) : ''
-  else
-    return ''
-  endif
-endfunction
-
-function! GitModified()
-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
-    let [a,m,r] = GitGutterGetHunkSummary()
-    return (m > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_modified, m,) : ''
-  else
-    return ''
-  endif
-endfunction
-
-function! GitRemoved()
-  if exists('*FugitiveHead') && exists('*GitGutterGetHunkSummary') && !empty(FugitiveHead())
-    let [a,m,r] = GitGutterGetHunkSummary()
-    return (r > 0)? printf("  %s%d",g:lightline#gitdiff#indicator_deleted, r,) : ''
-  else
-    return ''
-  endif
-endfunction
-
-function! Icon_Filename()
-  return winwidth(0) > 70 ? (strlen(&filetype) ?  WebDevIconsGetFileTypeSymbol() .. ' ' .. LightlineFilename()  : '') : LightlineFilename()
-endfunction
 
 " }}}
 
 " KEYBINDINGS {{{
-" Remap K to Esc because the man page feature is actually pretty annoying
+
 nnoremap K <ESC>
 nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
 noremap <up> <nop>
@@ -365,7 +257,8 @@ nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
 nnoremap <leader>ntt <Cmd>NERDTreeToggle<CR>
 nnoremap <leader>ntf <Cmd>NERDTreeFocus<CR>
 nnoremap <leader>ntc <Cmd>NERDTreeClose<CR>
-nnoremap <expr> <leader>nte "<Cmd>NERDTreeExplore " . expand("%:p:h") . "<CR><Cmd>pwd<CR><down>"
+nnoremap <leader>cyo <Cmd>call CoverYourselfInOil()<CR>
+
 " Fugitive mappings
 nnoremap <leader>fgp :Git push
 nnoremap <leader>fga <Cmd>Git add %<CR>
@@ -466,6 +359,8 @@ let g:NERDTreeShowHidden=1
 let g:NERDTreeMinimalUI=1
 let g:NERDTreeQuitOnOpen=3
 let g:NERDTreeMapUpdir='-'
+let g:NERDTreeMapJumpNextSibling="J"
+let g:NERDTreeMapJumpPrevSibling="K"
 let g:NERDTreeShowLineNumbers=1
 " }}}
 
@@ -502,7 +397,7 @@ augroup END
 " This allows you to undo changes to a file even after saving it.
 if version >= 703
     " Enable undofile and set undodir and backupdir
-    let s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
+    let  s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
     let &backupdir = expand(s:dir) . '/backup//'
     let &undodir   = expand(s:dir) . '/undo//'
     let &directory = expand(s:dir) . '/swp//'
@@ -519,14 +414,19 @@ end
 " Display cursorline and cursorcolumn ONLY in active window.
 augroup cursor_off
     autocmd!
-    autocmd WinLeave * set nocursorline nocursorcolumn
-    autocmd WinEnter * set cursorline nocursorcolumn
+    autocmd WinLeave * set nocursorline nocursorcolumn colorcolumn=0
+    autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
+augroup END
+
+augroup resize_splits
+  autocmd!
+  autocmd VimResized * wincmd =
 augroup END
 
 " change directory to the current buffer's file's parent file
 command CDC cd %:p:h
 
-augroup RestoreCursor
+augroup restore_cursor
   autocmd!
   autocmd BufReadPost *
     \ let line = line("'\"")
@@ -548,27 +448,21 @@ if has('gui_running')
     " Set a custom font you have installed on your computer.
     " Syntax: <font_name>\ <weight>\ <size>
     set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
-
-    " Display more of the file by default.
     " Hide the toolbar.
     set guioptions-=T
-
     " Hide the the left-side scroll bar.
     set guioptions-=L
-
     " Hide the the left-side scroll bar.
     set guioptions-=r
-
     " Hide the the menu bar.
     set guioptions-=m
-
     " Hide the the bottom scroll bar.
     set guioptions-=b
 
     " Map the F4 key to toggle the menu, toolbar, and scroll bar.
     " <Bar> is the pipe character.
     " <CR> is the enter key.
-    nnoremap <F9> :if &guioptions=~#'mTr'<Bar>
+    nnoremap <F9> <Cmd>if &guioptions=~#'mTr'<Bar>
                 \set guioptions-=mTr<Bar>
                 \else<Bar>
                 \set guioptions+=mTr<Bar>
@@ -601,6 +495,4 @@ set statusline+=\ <\ %l,%c\ <\ @%p%%\ ▲
 set laststatus=2
 
 " }}}
-
-runtime ./autoload/functions.vim
 
