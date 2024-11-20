@@ -1,5 +1,5 @@
-"
-  """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" vim: et ts=2 sts=2 sw=2
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "
 "               ██╗   ██╗██╗███╗   ███╗██████╗  ██████╗
 "               ██║   ██║██║████╗ ████║██╔══██╗██╔════╝
@@ -53,11 +53,6 @@ set autoindent
 " Do save backup files.
 set backup
 
-" set tab to visible character
-" set listchars=tab:▷▷⋮
-" set list lcs=tab:\▏\
-" this takes up way too much cpu for some reason so I disabled it
-
 " Do not let cursor scroll below or above N number of lines when scrolling.
 set scrolloff=4
 
@@ -107,6 +102,8 @@ set wildmode=longest:full,full
 
 " Speed up scrolling in Vim
 set ttyfast
+set lazyredraw
+set wmh=0 wmw=0
 
 " Search upwards for tags file instead only locally
 if has('path_extra')
@@ -128,7 +125,7 @@ if executable("xsel")
 
   autocmd VimLeave * call PreserveClipboard()
   nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
-  vnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
+  xnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
 
 endif
 
@@ -137,24 +134,28 @@ endif
 " PLUGINS {{{
 
 if empty($INFECT) || $INFECT == '0'
-    execute pathogen#infect()
-    let g:rc_difffn = 'diff'
+  execute pathogen#infect()
+  let g:rc_difffn = 'diff'
 elseif $INFECT == '1'
-    execute pathogen#infect('bundle/{}', 'extra/{}')
-    let g:rc_difffn = has('gui_running')? 'diff' : 'diffcolor'
-    set updatetime=230
+  execute pathogen#infect('bundle/{}', 'extra/{}')
+  let g:rc_difffn = has('gui_running')? 'diff' : 'diffcolor'
+  set updatetime=230
 else
-    execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
-    let g:rc_difffn = 'diff'
+  execute pathogen#infect('bundle/{}', $INFECT . '/{}' )
+  let g:rc_difffn = 'diff'
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
-  colorscheme slate
+  try
+    colorscheme slate
+  catch
+  endtry
   let g:rc_colors = '16color'
   let g:rc_separators = { 'left': "", 'right': "" }
   let g:rc_subseparators = { 'left': "|", 'right': "|" }
   let g:rc_clock_glyph = ''
   let g:rc_branch_glyph = '▲ '
+  let g:rc_readonly_glyph = 'RO'
   let g:lightline#gitdiff#indicator_added = '+'
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
@@ -164,12 +165,16 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let g:webdevicons_enable_nerdtree = 0
 else
   set noshowmode
-  colorscheme dracula
+  try
+    colorscheme dracula
+  catch
+  endtry
   let g:rc_colors = 'dracula'
   let g:rc_separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
   let g:rc_subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
   let g:rc_clock_glyph = ' '
   let g:rc_branch_glyph = ' '
+  let g:rc_readonly_glyph = '󰌾 '
   let g:lightline#gitdiff#indicator_added = ' '
   let g:lightline#gitdiff#indicator_deleted = ' '
   let g:lightline#gitdiff#indicator_modified = ' '
@@ -187,8 +192,6 @@ else
   endfunction
 endif
 
-runtime ./autoload/functions.vim
-
 let g:indentLine_char = '│'
 let g:lightline = {
       \ 'colorscheme': g:rc_colors,
@@ -202,18 +205,17 @@ let g:lightline = {
       \   'left': [[ 'filename' ]], 'right': [ [ 'lineinfo' ] ]
       \ },
       \ 'component_function': {
-      \   'mode': 'LightlineMode',
-      \   'fugitive': 'LightlineFugitive',
-      \   'filename': 'LightlineFilename',
-      \   'filemodified': 'FileTime',
+      \   'fugitive': 'Vim9LightlineFugitive',
+      \   'filename': 'Vim9LightlineFilename',
+      \   'filemodified': 'Vim9FileTime',
       \   'searchindex': 'SearchcountStatus',
       \   'diff': 'lightline#gitdiff#get',
-      \   'icon_filename': 'Icon_Filename',
+      \   'icon_filename': 'Vim9Icon_Filename',
       \ },
       \ 'component': {
       \   'time' : "%9{strftime(\"%m/%d,%H:%M:%S\",getftime(expand(\"%%\")))}",
       \   'cursorinfo': '%2p%% %3l:%-2c',
-      \   'diffcolor': "%#User1#%{GitAdded()}%#User3#%{GitModified()}%#User2#%{GitRemoved()}%9*",
+      \   'diffcolor': "%#User1#%{Vim9GitAdded()}%#User3#%{Vim9GitModified()}%#User2#%{Vim9GitRemoved()}%9*",
       \ },
       \ 'component_visible_condition': {
       \   'diffcolor': "exists('*FugitiveHead') && !empty(FugitiveHead())",
@@ -227,8 +229,8 @@ hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
 highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
 
 if (has('termguicolors') || &termguicolors) &&  ! has('gui_running') || &t_Co == 256
-    let g:lightline.active.left = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ]  ]
-    let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ]  ]
+  let g:lightline.active.left  = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ] ]
+  let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ] ]
 endif
 
 " }}}
@@ -237,10 +239,8 @@ endif
 
 nnoremap K <ESC>
 nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
-noremap <up> <nop>
-noremap <down> <nop>
-noremap <left> <nop>
-noremap <right> <nop>
+noremap <up> <nop>   | noremap <down> <nop>
+noremap <left> <nop> | noremap <right> <nop>
 
 " kitty opacity compatibility
 " let &t_ut=""
@@ -257,7 +257,7 @@ nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
 nnoremap <leader>ntt <Cmd>NERDTreeToggle<CR>
 nnoremap <leader>ntf <Cmd>NERDTreeFocus<CR>
 nnoremap <leader>ntc <Cmd>NERDTreeClose<CR>
-nnoremap <leader>cyo <Cmd>call CoverYourselfInOil()<CR>
+nnoremap <leader>cyo <Cmd>call functions#CoverYourselfInOil()<CR>
 
 " Fugitive mappings
 nnoremap <leader>fgp :Git push
@@ -265,24 +265,14 @@ nnoremap <leader>fga <Cmd>Git add %<CR>
 nnoremap <leader>fgc :Git add %<CR>:Git commit -m "
 
 " Type jj to exit insert mode quickly.
-inoremap jk <Esc>
-inoremap jK <Esc>
+inoremap jk <Esc> | inoremap jK <Esc>
 
-" Press the space bar to type the : character in command mode.
+" Press the space bar twice to type the : character in command mode.
 nnoremap <leader><space> :
 
-" Pressing the letter o will open a new line below the current one.
-" Exit insert mode after creating a new line above or below the current line.
-" nnoremap o o<esc>
-" nnoremap O O<esc>
-
 " Center the cursor vertically when moving to the next word during a search.
-nnoremap n nzz
-nnoremap N Nzz
-nnoremap * *zz
-nnoremap # #zz
-nnoremap g* g*zz
-nnoremap g# g#zz
+nnoremap * *zz | nnoremap # #zz
+nnoremap g* g*zz | nnoremap g# g#zz
 
 " Yank from cursor to the end of line.
 nnoremap Y y$
@@ -293,18 +283,18 @@ if executable('ctags')
 endif
 
 " You can split the window in Vim by typing :split or :vsplit.
-nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-h> <c-w>h
-nnoremap <c-l> <c-w>l
+nnoremap <c-h> <c-w>h | nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k | nnoremap <c-l> <c-w>l
+nnoremap <c-w>h <c-w>h<c-w><bar> | nnoremap <c-w>j <c-w>j<c-w>_
+nnoremap <c-w>k <c-w>k<c-w>_ | nnoremap <c-w>l <c-w>l<c-w><bar>
 
 " Move Lines
 " nnoremap <a-j> :execute 'move .+' . v:count1<CR>==
 " nnoremap <a-k> <cmd>execute 'move .-' . (v:count1 + 1)<cr>==
 " inoremap <a-j> <esc><cmd>m .+1<cr>==gi
 " inoremap <a-k> <esc><cmd>m .-2<cr>==gi
-vnoremap <s-j> :<C-u>execute "'<,'>move '>+" . v:count1<cr>gv=gv
-vnoremap <s-k> :<C-u>execute "'<,'>move '<-" . (v:count1 + 1)<cr>gv=gv
+xnoremap <s-j> :<C-u>execute "'<,'>move '>+" . v:count1<cr>gv=gv
+xnoremap <s-k> :<C-u>execute "'<,'>move '<-" . (v:count1 + 1)<cr>gv=gv
 
 " from: https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
 " If you want n to always search forward and N backward, use this:
@@ -323,27 +313,25 @@ cnoremap <expr> <c-p> wildmenumode() ? "\<c-p>" : "\<up>"
 nnoremap <leader>m  :<c-u><c-r><c-r>='let @'. v:register .' = '. string(getreg(v:register))<cr><c-f><left>
 
 " keep in visual mode
-xnoremap <  <gv
-xnoremap >  >gv
+xnoremap <  <gv | xnoremap >  >gv
 
 " Resize split windows using arrow keys by pressing:
 " CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
-nnoremap <c-up> <c-w>+
-nnoremap <c-down> <c-w>-
-nnoremap <c-left> <c-w>>
-nnoremap <c-right> <c-w><
+nnoremap <c-up> <c-w>+   | nnoremap <c-down> <c-w>-
+nnoremap <c-left> <c-w>> | nnoremap <c-right> <c-w><
 
 " replace the word under the cursor with whatever you want
-nnoremap <Leader>cw *``cgn
-nnoremap <Leader>cW #``cgN
+nnoremap <Leader>cw *``cgn | nnoremap <Leader>cW #``cgN
 
 " copy/paste the right way
-nnoremap <leader>p "+p
-nnoremap <Leader>P "+P
-nnoremap <Leader>y "+y
-nnoremap <Leader>Y "+y$
-xnoremap <Leader>y "+y
-xnoremap <Leader>p "+p
+nnoremap <leader>p "+p | nnoremap <Leader>P "+P
+nnoremap <Leader>y "+y | nnoremap <Leader>Y "+y$
+xnoremap <Leader>y "+y | xnoremap <Leader>p "+p
+
+" Visual mode pressing * or # searches for the current selection
+" from: https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim
+vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
+vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
 
 " Enter Normal Mode
 tnoremap <esc><esc> <c-\><c-n>
@@ -371,51 +359,53 @@ let g:NERDTreeShowLineNumbers=1
 
 " change cursor style depending on mode
 if empty($TMUX)
-    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
-    let &t_SR = "\<Esc>]50;CursorShape=2\x7"
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+  let &t_SR = "\<Esc>]50;CursorShape=2\x7"
 else
-    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-    let &t_SR = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=2\x7\<Esc>\\"
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+  let &t_SR = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=2\x7\<Esc>\\"
 endif
 
 " Enable the marker method of folding.
 augroup filetype_vim
-    autocmd!
-    autocmd FileType vim setlocal foldmethod=marker
+  autocmd!
+  autocmd FileType vim setlocal foldmethod=marker
 augroup END
 
 " If the current file type is HTML,pug,handlebars, set indentation to 2 spaces.
 augroup filetype_htm
-    autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
-    autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
-    autocmd Filetype hbs setlocal tabstop=2 shiftwidth=2 expandtab
+  autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
+  autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
+  autocmd Filetype hbs setlocal tabstop=2 shiftwidth=2 expandtab
 augroup END
+
+autocmd FileType Makefile set noexpandtab
 
 " If Vim version is equal to or greater than 7.3 enable undofile.
 " This allows you to undo changes to a file even after saving it.
 if version >= 703
-    " Enable undofile and set undodir and backupdir
-    let  s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
-    let &backupdir = expand(s:dir) . '/backup//'
-    let &undodir   = expand(s:dir) . '/undo//'
-    let &directory = expand(s:dir) . '/swp//'
-    set undofile
-    set undoreload=512
+  " Enable undofile and set undodir and backupdir
+  let  s:dir = has('win32') ? '$APPDATA/Vim' : isdirectory($HOME.'/Library') ? '~/Library/Vim' : empty($XDG_STATE_HOME) ? '~/.local/state/vim' : '$XDG_DATA_HOME/vim'
+  let &backupdir = expand(s:dir) . '/backup//'
+  let &undodir   = expand(s:dir) . '/undo//'
+  let &directory = expand(s:dir) . '/swp//'
+  set undofile
+  set undoreload=512
 endif
 
 " Automatically create directories for backup and undo files.
 if !isdirectory(expand(s:dir))
-    call system("mkdir -p " . expand(s:dir) . "/{backup,undo,swp}")
+  call system("mkdir -p " . expand(s:dir) . "/{backup,undo,swp}")
 end
 
 " You can split a window into sections by typing `:split` or `:vsplit`.
 " Display cursorline and cursorcolumn ONLY in active window.
 augroup cursor_off
-    autocmd!
-    autocmd WinLeave * set nocursorline nocursorcolumn colorcolumn=0
-    autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
+  autocmd!
+  autocmd WinLeave * set nocursorline nocursorcolumn colorcolumn=0
+  autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
 augroup END
 
 augroup resize_splits
@@ -437,36 +427,36 @@ augroup restore_cursor
 augroup END
 
 if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
-    set termguicolors
+  set termguicolors
 endif
 
 " If GUI version of Vim is running set these options.
 if has('gui_running')
-    set background=dark
-    colorscheme dracula
+  set background=dark
+  colorscheme dracula
 
-    " Set a custom font you have installed on your computer.
-    " Syntax: <font_name>\ <weight>\ <size>
-    set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
-    " Hide the toolbar.
-    set guioptions-=T
-    " Hide the the left-side scroll bar.
-    set guioptions-=L
-    " Hide the the left-side scroll bar.
-    set guioptions-=r
-    " Hide the the menu bar.
-    set guioptions-=m
-    " Hide the the bottom scroll bar.
-    set guioptions-=b
+  " Set a custom font you have installed on your computer.
+  " Syntax: <font_name>\ <weight>\ <size>
+  set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
+  " Hide the toolbar.
+  set guioptions-=T
+  " Hide the the left-side scroll bar.
+  set guioptions-=L
+  " Hide the the right-side scroll bar.
+  set guioptions-=r
+  " Hide the the menu bar.
+  set guioptions-=m
+  " Hide the the bottom scroll bar.
+  set guioptions-=b
 
-    " Map the F4 key to toggle the menu, toolbar, and scroll bar.
-    " <Bar> is the pipe character.
-    " <CR> is the enter key.
-    nnoremap <F9> <Cmd>if &guioptions=~#'mTr'<Bar>
-                \set guioptions-=mTr<Bar>
-                \else<Bar>
-                \set guioptions+=mTr<Bar>
-                \endif<CR><Esc>
+  " Map the F4 key to toggle the menu, toolbar, and scroll bar.
+  " <Bar> is the pipe character.
+  " <CR> is the enter key.
+  nnoremap <F9> <Cmd>if &guioptions=~#'mTr'<Bar>
+                    \set guioptions-=mTr<Bar>
+                    \else<Bar>
+                    \set guioptions+=mTr<Bar>
+                    \endif<CR><Esc>
 
 endif
 
@@ -476,8 +466,8 @@ endif
 
 set fillchars+=vert:\\u2502
 highlight VertSplit guibg='#21222C' guifg='#282A36'
-highlight CursorColumn ctermfg=0 ctermbg=8 guibg='#21222c'
-highlight CursorLine ctermfg=0 ctermbg=8 guibg='#21222c'
+highlight CursorColumn ctermfg=NONE ctermbg=NONE guibg='#21222c'
+highlight CursorLine ctermfg=NONE ctermbg=NONE guibg='#21222c'
 
 " Clear status line when vimrc is reloaded.
 set statusline=
