@@ -1,3 +1,4 @@
+" vim: shiftwidth=2 tabstop=2
 vim9script
 
 scriptencoding utf-8
@@ -15,15 +16,15 @@ def Vim9LightlineReadonly(): string
 enddef
 def g:Vim9LightlineFilename(): string
   return (&ft ==# 'vimfiler' ? vimfiler#get_status_string() :
-     &ft ==# 'unite' ? unite#get_status_string() :
+    &ft ==# 'unite' ? unite#get_status_string() :
     expand('%:t') !=# '' ? expand('%:t') : '[No Name]') ..
     (Vim9LightlineModified() !=# '' ? ' ' .. Vim9LightlineModified() : '') ..
     (Vim9LightlineReadonly() !=# '' ? ' ' .. Vim9LightlineReadonly() : '')
 enddef
 
 def g:Vim9LightlineFugitive(): string
-  if !empty(g:FugitiveHead())
-    return (winwidth(0) > 70) ? g:rc_branch_glyph .. g:FugitiveHead() : g:rc_branch_glyph
+  if !empty(g:FugitiveHead(7))
+    return (winwidth(0) > 70) ? g:rc_branch_glyph .. g:FugitiveHead(7) : g:rc_branch_glyph
   endif
   return ''
 enddef

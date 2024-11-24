@@ -28,24 +28,17 @@ filetype indent on
 syntax on
 
 " Add numbers to the file.
-set relativenumber
-set number
+set relativenumber number
 
 " Highlight cursor line and column underneath the cursor
-set cursorline " faster to not render
-set nocursorcolumn " slower than line but doesn't break ligatures
+set cursorline nocursorcolumn
 
 " Set an 80 column border for good coding style
 set colorcolumn=80
 
-" Set shift width to 4 spaces.
-set shiftwidth=4
-
-" Set tab width to 4 columns.
-set tabstop=4
-
+" Set shift width to 4 spaces, set tab width to 4 columns.
 " Use space characters instead of tabs.
-set expandtab
+set sw=4 ts=4 et sts=4
 
 " indent a new line the same amount as the line just typed
 set autoindent
@@ -54,26 +47,19 @@ set autoindent
 set backup
 
 " Do not let cursor scroll below or above N number of lines when scrolling.
-set scrolloff=4
-
 " Do not wrap lines. Allow long lines to extend as far as the line goes.
-set nowrap
+set scrolloff=4 nowrap
 
 " While searching though a file incrementally highlight matching characters as you type.
 set incsearch
 
-" Ignore capital letters during search.
-set ignorecase
-
 " Override the ignorecase option if searching for capital letters.
 " This will allow you to search specifically for capital letters.
-set smartcase
+set smartcase ignorecase
 
 " Show partial command you type in the last line of the screen.
-set showcmd
-
 " Show the mode you are on the last line.
-set showmode
+set showcmd showmode
 
 " Show matching words during a search.
 set showmatch
@@ -83,9 +69,6 @@ set hlsearch
 
 " Enable mouse click
 set mouse=a
-
-" Middlie-click paste
-set mouse+=v
 
 " Set the commands to save in history default number is 20.
 set history=10000
@@ -101,8 +84,8 @@ set wildignore=*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx,*.w
 set wildmode=longest:full,full
 
 " Speed up scrolling in Vim
-set ttyfast
-set lazyredraw
+set ttyfast lazyredraw
+" Hide other windows completely
 set wmh=0 wmw=0
 
 " Search upwards for tags file instead only locally
@@ -113,22 +96,6 @@ endif
 let mapleader=" "
 let maplocalleader=" "
 
-if executable("xsel")
-
-  function! PreserveClipboard()
-    call system("xsel -ib", getreg('+'))
-  endfunction
-  function! PreserveClipboadAndSuspend()
-    call PreserveClipboard()
-    suspend
-  endfunction
-
-  autocmd VimLeave * call PreserveClipboard()
-  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
-  xnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
-
-endif
-
 " }}}
 
 " PLUGINS {{{
@@ -136,6 +103,7 @@ endif
 if empty($INFECT) || $INFECT == '0'
   execute pathogen#infect()
   let g:rc_difffn = 'diff'
+  let g:loaded_matchparen = 1
 elseif $INFECT == '1'
   execute pathogen#infect('bundle/{}', 'extra/{}')
   let g:rc_difffn = has('gui_running')? 'diff' : 'diffcolor'
@@ -148,8 +116,8 @@ endif
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
   try
     colorscheme slate
-  catch
-  endtry
+  catch | endtry
+  let g:webdevicons_enable = 0
   let g:rc_colors = '16color'
   let g:rc_separators = { 'left': "", 'right': "" }
   let g:rc_subseparators = { 'left': "|", 'right': "|" }
@@ -188,7 +156,7 @@ else
   let g:webdevicons_enable_startify = 1
   "highlight GitGutterChange guifg=#8be9fd
   function! StartifyEntryFormat()
-    return 'WebDevIconsGetFileTypeSymbol(absolute_path) ." ". entry_path'
+    return 'WebDevIconsGetFileTypeSymbol(absolute_path) . " " . entry_path'
   endfunction
 endif
 
@@ -228,10 +196,21 @@ hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
 hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
 highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
 
-if (has('termguicolors') || &termguicolors) &&  ! has('gui_running') || &t_Co == 256
+if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
   let g:lightline.active.left  = [ [ 'mode', 'paste' ],  [ 'fugitive' ], [ 'icon_filename' ] ]
   let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ] ]
 endif
+
+" Have nerdtree ignore certain files and directories.
+let g:NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$', '\.webp$', '\.webm$']
+" More NERDTree options
+let g:NERDTreeShowHidden=1
+let g:NERDTreeMinimalUI=1
+let g:NERDTreeQuitOnOpen=3
+let g:NERDTreeMapUpdir='-'
+let g:NERDTreeMapJumpNextSibling="J"
+let g:NERDTreeMapJumpPrevSibling="K"
+let g:NERDTreeShowLineNumbers=1
 
 " }}}
 
@@ -239,17 +218,13 @@ endif
 
 nnoremap K <ESC>
 nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
-noremap <up> <nop>   | noremap <down> <nop>
-noremap <left> <nop> | noremap <right> <nop>
+nnoremap <up> <nop>| nnoremap <down> <nop>
+nnoremap <left> <nop>| nnoremap <right> <nop>
 
 " kitty opacity compatibility
 " let &t_ut=""
 
-nnoremap <leader>´ ``
-
-nnoremap <leader>bn <Cmd>bn<CR>
-nnoremap <leader>nb <Cmd>bp<CR>
-nnoremap <leader>bN <Cmd>bp<CR>
+nnoremap L <Cmd>bn<CR>|nnoremap H <Cmd>bp<CR>
 
 nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
 
@@ -260,33 +235,46 @@ nnoremap <leader>ntc <Cmd>NERDTreeClose<CR>
 nnoremap <leader>cyo <Cmd>call functions#CoverYourselfInOil()<CR>
 
 " Fugitive mappings
-nnoremap <leader>fgp :Git push
-nnoremap <leader>fga <Cmd>Git add %<CR>
-nnoremap <leader>fgc :Git add %<CR>:Git commit -m "
+nnoremap <leader>ga <Cmd>Git add %:p<CR><CR>
+nnoremap <leader>gs <Cmd>Git status<CR>
+nnoremap <leader>gc <Cmd>Git commit -v -q<CR>
+nnoremap <leader>gt <Cmd>Git commit -v -q %:p<CR>
+nnoremap <leader>gr <Cmd>Gread<CR>
+nnoremap <leader>gw <Cmd>Gwrite<CR><CR>
+nnoremap <leader>gl <Cmd>silent! Glog<CR><Cmd>bot copen<CR>
+nnoremap <leader>gp :Ggrep<Space>
+nnoremap <leader>gm :Git move<Space>
+nnoremap <leader>gb :Git branch<Space>
+nnoremap <leader>go :Git checkout<Space>
+
+" GitGutter Mappings
+nmap ]h <Plug>(GitGutterNextHunk)|nmap ghs <Plug>(GitGutterStageHunk)
+nmap [h <Plug>(GitGutterPrevHunk)|nmap ghu <Plug>(GitGutterUndoHunk)
+nmap ghp <Plug>(GitGutterPreviewHunk)
 
 " Type jj to exit insert mode quickly.
-inoremap jk <Esc> | inoremap jK <Esc>
+inoremap jk <Esc>| inoremap jK <Esc>
 
 " Press the space bar twice to type the : character in command mode.
 nnoremap <leader><space> :
 
 " Center the cursor vertically when moving to the next word during a search.
-nnoremap * *zz | nnoremap # #zz
-nnoremap g* g*zz | nnoremap g# g#zz
+nnoremap * *zz|nnoremap g* g*zz
+nnoremap # #zz|nnoremap g# g#zz
 
 " Yank from cursor to the end of line.
 nnoremap Y y$
 
 " Render the ctags inside Vim.
 if executable('ctags')
-  nnoremap <F5> :w <CR>:!ctags -R .<CR><ESC>
+  nnoremap <F5> :w <cr>:!ctags -R .<cr><ESC>
 endif
 
 " You can split the window in Vim by typing :split or :vsplit.
-nnoremap <c-h> <c-w>h | nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k | nnoremap <c-l> <c-w>l
-nnoremap <c-w>h <c-w>h<c-w><bar> | nnoremap <c-w>j <c-w>j<c-w>_
-nnoremap <c-w>k <c-w>k<c-w>_ | nnoremap <c-w>l <c-w>l<c-w><bar>
+nnoremap <c-h> <c-w>h| nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k| nnoremap <c-l> <c-w>l
+nnoremap <c-w>l <c-w>l<c-w><bar>| nnoremap <c-w>j <c-w>j<c-w>_
+nnoremap <c-w>h <c-w>h<c-w><bar>| nnoremap <c-w>k <c-w>k<c-w>_
 
 " Move Lines
 " nnoremap <a-j> :execute 'move .+' . v:count1<CR>==
@@ -313,49 +301,48 @@ cnoremap <expr> <c-p> wildmenumode() ? "\<c-p>" : "\<up>"
 nnoremap <leader>m  :<c-u><c-r><c-r>='let @'. v:register .' = '. string(getreg(v:register))<cr><c-f><left>
 
 " keep in visual mode
-xnoremap <  <gv | xnoremap >  >gv
+xnoremap < <gv|xnoremap > >gv
 
 " Resize split windows using arrow keys by pressing:
 " CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
-nnoremap <c-up> <c-w>+   | nnoremap <c-down> <c-w>-
-nnoremap <c-left> <c-w>> | nnoremap <c-right> <c-w><
+nnoremap <c-right> <c-w><| nnoremap <c-down> <c-w>-
+nnoremap <c-left> <c-w>>|  nnoremap <c-up> <c-w>+
 
 " replace the word under the cursor with whatever you want
-nnoremap <Leader>cw *``cgn | nnoremap <Leader>cW #``cgN
+nnoremap <Leader>cw *``cgn| nnoremap <Leader>cW #``cgN
 
 " copy/paste the right way
-nnoremap <leader>p "+p | nnoremap <Leader>P "+P
-nnoremap <Leader>y "+y | nnoremap <Leader>Y "+y$
-xnoremap <Leader>y "+y | xnoremap <Leader>p "+p
+nnoremap <leader>p "+p| nnoremap <Leader>P "+P
+nnoremap <Leader>y "+y| nnoremap <Leader>Y "+y$
+xnoremap <Leader>y "+y| xnoremap <Leader>p "+p
 
 " Visual mode pressing * or # searches for the current selection
 " from: https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim
-vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
-vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
+vnoremap <silent> * :<C-u>call functions#VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
+vnoremap <silent> # :<C-u>call functions#VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
 
 " Enter Normal Mode
 tnoremap <esc><esc> <c-\><c-n>
 
-" NERDTree specific mappings.
-" Map the F3 key to toggle NERDTree open and close.
-" nnoremap <F3> :NERDTreeToggle<cr>
-
-" Have nerdtree ignore certain files and directories.
-let g:NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$', '\.webp$', '\.webm$']
-" More NERDTree options
-let g:NERDTreeShowHidden=1
-let g:NERDTreeMinimalUI=1
-let g:NERDTreeQuitOnOpen=3
-let g:NERDTreeMapUpdir='-'
-let g:NERDTreeMapJumpNextSibling="J"
-let g:NERDTreeMapJumpPrevSibling="K"
-let g:NERDTreeShowLineNumbers=1
 " }}}
 
 " VIMSCRIPT {{{
 
-" auto reload file on saving
-" autocmd BufWritePost $MYVIMRC source $MYVIMRC
+if executable("xsel") && $XDG_SESSION_TYPE !=# "wayland"
+
+  function! PreserveClipboard()
+    call system("xsel -ib", getreg('+'))
+  endfunction
+  function! PreserveClipboadAndSuspend()
+    call PreserveClipboard()
+    suspend
+  endfunction
+
+  autocmd VimLeave * call PreserveClipboard()
+  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
+  xnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
+
+endif
 
 " change cursor style depending on mode
 if empty($TMUX)
@@ -376,9 +363,12 @@ augroup END
 
 " If the current file type is HTML,pug,handlebars, set indentation to 2 spaces.
 augroup filetype_htm
+  autocmd!
   autocmd Filetype html setlocal tabstop=2 shiftwidth=2 expandtab
   autocmd Filetype pug setlocal tabstop=2 shiftwidth=2 expandtab
   autocmd Filetype hbs setlocal tabstop=2 shiftwidth=2 expandtab
+  autocmd FileType lua setlocal tabstop=2 shiftwidth=2 expandtab
+  autocmd FileType vim setlocal tabstop=2 shiftwidth=2 expandtab
 augroup END
 
 autocmd FileType Makefile set noexpandtab
@@ -408,11 +398,6 @@ augroup cursor_off
   autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
 augroup END
 
-augroup resize_splits
-  autocmd!
-  autocmd VimResized * wincmd =
-augroup END
-
 " change directory to the current buffer's file's parent file
 command CDC cd %:p:h
 
@@ -426,7 +411,7 @@ augroup restore_cursor
     \ | endif
 augroup END
 
-if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
+if has('termguicolors') && has('gui_running') || &t_Co == 256
   set termguicolors
 endif
 
@@ -437,7 +422,7 @@ if has('gui_running')
 
   " Set a custom font you have installed on your computer.
   " Syntax: <font_name>\ <weight>\ <size>
-  set guifont=FiraCode\ Nerd\ Font\ Mono\ 12
+  set guifont=FiraCode\ Nerd\ Font\ Mono\ 13
   " Hide the toolbar.
   set guioptions-=T
   " Hide the the left-side scroll bar.

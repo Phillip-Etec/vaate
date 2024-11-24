@@ -24,7 +24,7 @@ function! CmdLine(str)
     call feedkeys(":" . a:str)
 endfunction
 
-function! VisualSelection(direction, extra_filter) range
+function! functions#VisualSelection(direction, extra_filter) range
     let l:saved_reg = @"
     execute "normal! vgvy"
 
