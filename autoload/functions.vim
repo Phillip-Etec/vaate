@@ -42,12 +42,12 @@ function! functions#VisualSelection(direction, extra_filter) range
 endfunction
 
 function! functions#CoverYourselfInOil()
-    set hidden
+    setlocal hidden
     if(&ft == 'startify' || expand("%:t") ==# '')
         let w:prev_nodes = ['', '']
         let w:prev_dir = ''
         exec "NERDTreeExplore"
-        set nohidden
+        setlocal nohidden
         return
     endif
     let w:prev_nodes = (empty(get(w:, 'prev_nodes')))? ['', ''] : w:prev_nodes

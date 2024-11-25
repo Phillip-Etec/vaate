@@ -127,7 +127,7 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let g:lightline#gitdiff#indicator_added = '+'
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
-  let g:lightline#gitdiff#separator = ' '
+  let g:lightline#gitdiff#separator = ''
   highlight GitGutterChange ctermbg=NONE ctermfg=6
   let g:webdevicons_enable = 0
   let g:webdevicons_enable_nerdtree = 0
@@ -135,8 +135,7 @@ else
   set noshowmode
   try
     colorscheme dracula
-  catch
-  endtry
+  catch | endtry
   let g:rc_colors = 'dracula'
   let g:rc_separators = { 'left': "\ue0b0", 'right': "\ue0b2" }
   let g:rc_subseparators = { 'left': "\ue0b1", 'right': "\ue0b3" }
@@ -191,9 +190,9 @@ let g:lightline = {
       \ }
       \ }
 
-hi User1 ctermfg=2 ctermbg=0 guifg='#50FA7B' guibg='#44475A'
-hi User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
-hi User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
+highlight User1 ctermfg=2 ctermbg=0 guifg='#50FA7B' guibg='#44475A'
+highlight User2 ctermfg=1 ctermbg=0 guifg='#FF5555' guibg='#44475A'
+highlight User3 ctermfg=6 ctermbg=0 guifg='#8BE9FD' guibg='#44475A'
 highlight User9 ctermfg=NONE ctermbg=NONE guifg=NONE guibg='#44475A'
 
 if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 256
@@ -201,7 +200,7 @@ if (has('termguicolors') || &termguicolors) && has('gui_running') || &t_Co == 25
   let g:lightline.active.right = [ [ 'filemodified', 'searchindex' ],  [ 'cursorinfo' ], [ g:rc_difffn ] ]
 endif
 
-" Have nerdtree ignore certain files and directories.
+" Have NERDTree ignore certain files and directories.
 let g:NERDTreeIgnore=['\.git$', '\.jpg$', '\.mp4$', '\.ogg$', '\.iso$', '\.pdf$', '\.pyc$', '\.odt$', '\.png$', '\.gif$', '\.db$', '\.webp$', '\.webm$']
 " More NERDTree options
 let g:NERDTreeShowHidden=1
@@ -218,13 +217,13 @@ let g:NERDTreeShowLineNumbers=1
 
 nnoremap K <ESC>
 nnoremap <esc> <Cmd>nohlsearch<CR><ESC>
-nnoremap <up> <nop>| nnoremap <down> <nop>
+nnoremap <up> <nop>|  nnoremap <down> <nop>
 nnoremap <left> <nop>| nnoremap <right> <nop>
 
 " kitty opacity compatibility
 " let &t_ut=""
 
-nnoremap L <Cmd>bn<CR>|nnoremap H <Cmd>bp<CR>
+nnoremap L <Cmd>bn<CR>| nnoremap H <Cmd>bp<CR>
 
 nnoremap <leader>et <Cmd>tab ter++kill=hup<CR>
 
@@ -248,12 +247,16 @@ nnoremap <leader>gb :Git branch<Space>
 nnoremap <leader>go :Git checkout<Space>
 
 " GitGutter Mappings
-nmap ]h <Plug>(GitGutterNextHunk)|nmap ghs <Plug>(GitGutterStageHunk)
-nmap [h <Plug>(GitGutterPrevHunk)|nmap ghu <Plug>(GitGutterUndoHunk)
+nmap ]h <Plug>(GitGutterNextHunk)| nmap ghs <Plug>(GitGutterStageHunk)
+nmap [h <Plug>(GitGutterPrevHunk)| nmap ghu <Plug>(GitGutterUndoHunk)
 nmap ghp <Plug>(GitGutterPreviewHunk)
 
 " Type jj to exit insert mode quickly.
 inoremap jk <Esc>| inoremap jK <Esc>
+
+imap <up> <C-O>gk| imap <down> <C-O>gj
+vmap <up> gk| vmap <down> gj
+nmap k gk| nmap j gj
 
 " Press the space bar twice to type the : character in command mode.
 nnoremap <leader><space> :
@@ -273,8 +276,8 @@ endif
 " You can split the window in Vim by typing :split or :vsplit.
 nnoremap <c-h> <c-w>h| nnoremap <c-j> <c-w>j
 nnoremap <c-k> <c-w>k| nnoremap <c-l> <c-w>l
-nnoremap <c-w>l <c-w>l<c-w><bar>| nnoremap <c-w>j <c-w>j<c-w>_
-nnoremap <c-w>h <c-w>h<c-w><bar>| nnoremap <c-w>k <c-w>k<c-w>_
+nnoremap <c-w>h <c-w>h<c-w><bar>| nnoremap <c-w>j <c-w>j<c-w>_
+nnoremap <c-w>l <c-w>l<c-w><bar>| nnoremap <c-w>k <c-w>k<c-w>_
 
 " Move Lines
 " nnoremap <a-j> :execute 'move .+' . v:count1<CR>==
@@ -309,12 +312,12 @@ nnoremap <c-right> <c-w><| nnoremap <c-down> <c-w>-
 nnoremap <c-left> <c-w>>|  nnoremap <c-up> <c-w>+
 
 " replace the word under the cursor with whatever you want
-nnoremap <Leader>cw *``cgn| nnoremap <Leader>cW #``cgN
+nnoremap <leader>cw *``cgn| nnoremap <leader>cW #``cgN
 
 " copy/paste the right way
-nnoremap <leader>p "+p| nnoremap <Leader>P "+P
-nnoremap <Leader>y "+y| nnoremap <Leader>Y "+y$
-xnoremap <Leader>y "+y| xnoremap <Leader>p "+p
+nnoremap <leader>p "+p| nnoremap <leader>P "+P
+nnoremap <leader>y "+y| nnoremap <leader>Y "+y$
+xnoremap <leader>y "+y| xnoremap <Leader>p "+p
 
 " Visual mode pressing * or # searches for the current selection
 " from: https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim
@@ -324,11 +327,15 @@ vnoremap <silent> # :<C-u>call functions#VisualSelection('', '')<CR>?<C-R>=@/<CR
 " Enter Normal Mode
 tnoremap <esc><esc> <c-\><c-n>
 
+if executable("xsel") && $XDG_SESSION_TYPE !=# "wayland"
+
+  autocmd VimLeave * call PreserveClipboard()
+  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
+  xnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
+
 " }}}
 
 " VIMSCRIPT {{{
-
-if executable("xsel") && $XDG_SESSION_TYPE !=# "wayland"
 
   function! PreserveClipboard()
     call system("xsel -ib", getreg('+'))
@@ -337,10 +344,6 @@ if executable("xsel") && $XDG_SESSION_TYPE !=# "wayland"
     call PreserveClipboard()
     suspend
   endfunction
-
-  autocmd VimLeave * call PreserveClipboard()
-  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
-  xnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
 
 endif
 
@@ -371,7 +374,7 @@ augroup filetype_htm
   autocmd FileType vim setlocal tabstop=2 shiftwidth=2 expandtab
 augroup END
 
-autocmd FileType Makefile set noexpandtab
+autocmd FileType Makefile setlocal noexpandtab
 
 " If Vim version is equal to or greater than 7.3 enable undofile.
 " This allows you to undo changes to a file even after saving it.
@@ -392,7 +395,7 @@ end
 
 " You can split a window into sections by typing `:split` or `:vsplit`.
 " Display cursorline and cursorcolumn ONLY in active window.
-augroup cursor_off
+augroup cursor_toggle
   autocmd!
   autocmd WinLeave * set nocursorline nocursorcolumn colorcolumn=0
   autocmd WinEnter * set cursorline nocursorcolumn colorcolumn=80
@@ -418,7 +421,7 @@ endif
 " If GUI version of Vim is running set these options.
 if has('gui_running')
   set background=dark
-  colorscheme dracula
+  try | colorscheme dracula | catch | endtry
 
   " Set a custom font you have installed on your computer.
   " Syntax: <font_name>\ <weight>\ <size>
@@ -464,7 +467,7 @@ set statusline+=▲\ %F\ >\ %M\ %Y\ %R\ >
 set statusline+=%=
 " 
 " Status line right side.
-set statusline+=\ <\ %l,%c\ <\ @%p%%\ ▲
+set statusline+=\ <\ %l:%c\ <\ @%p%%\ ▲
 
 " Show the status on the second to last line.
 set laststatus=2
