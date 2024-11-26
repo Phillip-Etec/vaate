@@ -26,6 +26,7 @@ Vim configuration with pathogen runtime management, **V**im **a**s **a** **t**ex
 ```sh
 (cd ~/.vim/bundle && PLUGIN='vim-weedeater' && git rm -f $PLUGIN)
 ```
+
 ## Plugin modifications:
 Make a diff file from submodules' changes:
 ```sh

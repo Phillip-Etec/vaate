@@ -114,9 +114,7 @@ else
 endif
 
 if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 256
-  try
-    colorscheme slate
-  catch | endtry
+  try | colorscheme slate | catch | endtry
   let g:webdevicons_enable = 0
   let g:rc_colors = '16color'
   let g:rc_separators = { 'left': "", 'right': "" }
@@ -127,7 +125,7 @@ if !(has('termguicolors') && &termguicolors) && !has('gui_running') && &t_Co != 
   let g:lightline#gitdiff#indicator_added = '+'
   let g:lightline#gitdiff#indicator_deleted = '-'
   let g:lightline#gitdiff#indicator_modified = '~'
-  let g:lightline#gitdiff#separator = ''
+  let g:lightline#gitdiff#separator = ' '
   highlight GitGutterChange ctermbg=NONE ctermfg=6
   let g:webdevicons_enable = 0
   let g:webdevicons_enable_nerdtree = 0
@@ -306,6 +304,9 @@ nnoremap <leader>m  :<c-u><c-r><c-r>='let @'. v:register .' = '. string(getreg(v
 " keep in visual mode
 xnoremap < <gv|xnoremap > >gv
 
+" highlight last inserted text
+nnoremap gV `[v`]
+
 " Resize split windows using arrow keys by pressing:
 " CTRL+UP, CTRL+DOWN, CTRL+LEFT, or CTRL+RIGHT.
 nnoremap <c-right> <c-w><| nnoremap <c-down> <c-w>-
@@ -317,12 +318,17 @@ nnoremap <leader>cw *``cgn| nnoremap <leader>cW #``cgN
 " copy/paste the right way
 nnoremap <leader>p "+p| nnoremap <leader>P "+P
 nnoremap <leader>y "+y| nnoremap <leader>Y "+y$
-xnoremap <leader>y "+y| xnoremap <Leader>p "+p
+xnoremap <leader>y "+y| xnoremap <leader>p "+p
 
 " Visual mode pressing * or # searches for the current selection
 " from: https://github.com/amix/vimrc/blob/master/vimrcs/basic.vim
 vnoremap <silent> * :<C-u>call functions#VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
 vnoremap <silent> # :<C-u>call functions#VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>
+
+" Perform dot commands over visual blocks:
+vnoremap . :normal .<CR>
+
+nnoremap <expr> <leader>ut (&laststatus == 2) ? "<Cmd>set noshowmode noruler laststatus=0 noshowcmd<CR>" : "<Cmd>set showmode ruler laststatus=2 showcmd<CR>"
 
 " Enter Normal Mode
 tnoremap <esc><esc> <c-\><c-n>
@@ -375,6 +381,8 @@ augroup filetype_htm
 augroup END
 
 autocmd FileType Makefile setlocal noexpandtab
+
+autocmd FileType css set omnifunc=csscomplete#CompleteCSS
 
 " If Vim version is equal to or greater than 7.3 enable undofile.
 " This allows you to undo changes to a file even after saving it.
@@ -441,10 +449,10 @@ if has('gui_running')
   " <Bar> is the pipe character.
   " <CR> is the enter key.
   nnoremap <F9> <Cmd>if &guioptions=~#'mTr'<Bar>
-                    \set guioptions-=mTr<Bar>
-                    \else<Bar>
-                    \set guioptions+=mTr<Bar>
-                    \endif<CR><Esc>
+                  \set guioptions-=mTr<Bar>
+                  \else<Bar>
+                  \set guioptions+=mTr<Bar>
+                  \endif<CR><Esc>
 
 endif
 
